@@ -6,7 +6,7 @@ const char* TITLE = "Clipboard+";
 const int WIDTH = 400, HEIGHT = 200;
 bool running = false;
 
-LPTSTR clipboardData[10] = {0};
+LPTSTR clipboardData[10] = {"", "", "", "", "", "", "", "", "", ""};
 
 LRESULT CALLBACK WindProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -62,31 +62,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	MSG message;
 	running = true;
 
-	HGLOBAL hGlobal;
-	LPTSTR temp;
-
 	float startTime = timeMs();
 
 	while(running) {
 
 		if(timeMs() - startTime > 150) {
-
-
 			if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(0x43)) {
 
-				for(int i = 0x30; i < 0x39; i++) {
-					int index = i - 0x30;
+				for(int i = 0x30; i <= 0x39; i++) {
 					if(GetAsyncKeyState(i)) {
-						//std::cout << "Ctrl+C+" << i - 0x30 << std::endl;
+						int index = i - 0x30;
 
 						if(!OpenClipboard(hwnd)) {
 							MessageBox(hwnd, "Error opening clipboard!", "Error", MB_OK);
 							stop();
 						}
 
-						hGlobal = GetClipboardData(CF_TEXT);
+						HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
 						if(hGlobal) {
-							temp = (LPTSTR)GlobalLock(hGlobal);
+							LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
 
 							if(temp == NULL) {
 								MessageBox(hwnd, "Error copying data to CB+", "Error", MB_OK);
@@ -104,9 +98,37 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						MessageBox(hwnd, clipboardData[index], "Clipboard+", MB_OK);
 					}
 				}
-
 			}
 
+			if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(0x56)) {
+
+				for(int i = 0x30; i <= 0x39; i++) {
+
+					if(GetAsyncKeyState(i)) {
+						int index = i - 0x30;
+
+						if(!OpenClipboard(hwnd)) {
+							MessageBox(hwnd, "Error opening clipboard!", "Error", MB_OK);
+							stop();
+						}
+
+						HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, strlen(clipboardData[index]) + 1);
+						LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
+						memcpy(temp, clipboardData[index], strlen(clipboardData[index]) + 1);
+						GlobalUnlock(hGlobal);
+						std::cout << (LPTSTR)GlobalLock(hGlobal) << std::endl;
+
+						if(!SetClipboardData(CF_TEXT, hGlobal)){
+							std::cout << GetLastError() << std::endl;
+							MessageBox(hwnd, "Error setting  clipboard data!", "Error", MB_OK);
+						}
+
+						EmptyClipboard();
+						CloseClipboard();
+					}
+
+				}
+			}
 
 			startTime = timeMs();
 		}
