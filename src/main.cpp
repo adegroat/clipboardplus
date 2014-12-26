@@ -2,13 +2,16 @@
 #include <iostream>
 #include <ctime>
 
-const char* TITLE = "Clipboard+";
+#include "WindowSetup.h"
+
+//const char* TITLE = "Clipboard+";
+#define TITLE "Clipboard+"
 const int WIDTH = 400, HEIGHT = 200;
 bool running = false;
 
 LPTSTR clipboardData[10] = {"", "", "", "", "", "", "", "", "", ""};
 
-LRESULT CALLBACK WindProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
 
 long timeMs() {
 	return ((float)clock() / CLOCKS_PER_SEC) * 1000;
@@ -20,22 +23,9 @@ void stop() {
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-	WNDCLASSEX wc;
 
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WindProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInstance;
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-	wc.lpszClassName = TITLE;
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-	wc.lpszMenuName = NULL;
-
-	if(!RegisterClassEx(&wc)){
+	WindowSetup ws(hInstance, TITLE, windProc);
+	if(!ws.setup()){
 		MessageBox(NULL, "Error registering window!", "Error", MB_OK);
 		return 0;
 	}
@@ -140,7 +130,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return message.wParam;
 }
 
-LRESULT CALLBACK WindProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK windProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
 	switch(message) {
 
