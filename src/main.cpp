@@ -74,8 +74,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						int index = i - 0x30;
 
 						if(!OpenClipboard(hwnd)) {
-							MessageBox(hwnd, "Error opening clipboard!", "Error", MB_OK);
-							stop();
+							MessageBox(hwnd, "Error opening clipboard! (copy)", "Error", MB_OK);
+							//stop();
 						}
 
 						HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
@@ -108,8 +108,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						int index = i - 0x30;
 
 						if(!OpenClipboard(hwnd)) {
-							MessageBox(hwnd, "Error opening clipboard!", "Error", MB_OK);
-							stop();
+							MessageBox(hwnd, "Error opening clipboard! (paste)", "Error", MB_OK);
+							//stop();
 						}
 
 						HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, strlen(clipboardData[index]) + 1);
