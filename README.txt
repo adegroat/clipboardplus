@@ -1,0 +1,1 @@
+Improved clipboard for Windows.
