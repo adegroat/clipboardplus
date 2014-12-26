@@ -100,7 +100,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(0x56)) {
+			// TODO: Figure out Ctrl+V+NUM instead of Ctrl+NUM+V
+			if(GetAsyncKeyState(VK_CONTROL) /*&& GetAsyncKeyState(0x56)*/) {
 
 				for(int i = 0x30; i <= 0x39; i++) {
 
@@ -116,17 +117,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 						LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
 						memcpy(temp, clipboardData[index], strlen(clipboardData[index]) + 1);
 						GlobalUnlock(hGlobal);
-						std::cout << (LPTSTR)GlobalLock(hGlobal) << std::endl;
 
 						if(!SetClipboardData(CF_TEXT, hGlobal)){
 							std::cout << GetLastError() << std::endl;
 							MessageBox(hwnd, "Error setting  clipboard data!", "Error", MB_OK);
 						}
 
-						EmptyClipboard();
+//						EmptyClipboard();
 						CloseClipboard();
 					}
-
 				}
 			}
 
