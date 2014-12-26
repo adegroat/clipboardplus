@@ -95,7 +95,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 						EmptyClipboard();
 						CloseClipboard();
-						MessageBox(hwnd, clipboardData[index], "Clipboard+", MB_OK);
 					}
 				}
 			}
@@ -123,7 +122,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							MessageBox(hwnd, "Error setting  clipboard data!", "Error", MB_OK);
 						}
 
-//						EmptyClipboard();
+						if(GetAsyncKeyState(0x56)) EmptyClipboard();
 						CloseClipboard();
 					}
 				}
