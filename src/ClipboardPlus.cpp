@@ -1,7 +1,8 @@
 #include "ClipboardPlus.h"
 
-ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, MSG message, LPSTR lpCmdLine, int nCmdShow) {
+ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR lpCmdLine, int nCmdShow) {
 	this->hInstance = hInstance;
+	this->wp = wp;
 	this->nCmdShow = nCmdShow;
 	this->message = message;
 	running = false;
@@ -9,6 +10,12 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, MSG message, LPSTR lpCmdLine, 
 	width = 400;
 	height = 200;
 	mainWindow = NULL;
+	//clipboardData = new LPTSTR[10];
+	for(int i = 0; i < 10; i++) clipboardData[i] = "";
+}
+
+ClipboardPlus::~ClipboardPlus() {
+//	delete[] clipboardData;
 }
 
 void ClipboardPlus::start() {
@@ -16,7 +23,7 @@ void ClipboardPlus::start() {
 
 	running = true;
 
-	WindowSetup ws(hInstance, title, this->windProc);
+	WindowSetup ws(hInstance, title, wp);
 	if(!ws.setup()){
 		MessageBox(NULL, "Error registering window!", "Error", MB_OK);
 		return;
@@ -131,8 +138,9 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	case WM_DESTROY:
 		stop();
 		break;
-
+	default:
+		return DefWindowProcA(hwnd, message, wParam, lParam);
 	}
 
-	return DefWindowProcA(hwnd, message, wParam, lParam);
+	return 0;
 }

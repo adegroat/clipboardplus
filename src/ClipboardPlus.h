@@ -20,10 +20,12 @@ private:
 	LPTSTR clipboardData[10];
 
 public:
-	ClipboardPlus(HINSTANCE, MSG, LPSTR, int);
+	ClipboardPlus(HINSTANCE, WNDPROC, MSG, LPSTR, int);
+	ClipboardPlus() {  }
 	~ClipboardPlus();
-	void start();
 	LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
+	WNDPROC wp;
+	void start();
 	void mainLoop();
 	void stop();
 	bool isRunning() { return running; }
