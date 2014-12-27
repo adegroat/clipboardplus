@@ -18,7 +18,7 @@ bool WindowSetup::setup() {
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+	wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE+1);
 	wc.lpszMenuName = NULL;
 
 	return RegisterClassEx(&wc);

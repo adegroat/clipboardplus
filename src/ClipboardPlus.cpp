@@ -7,8 +7,8 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR
 	this->message = message;
 	running = false;
 	title = "Clipboard+";
-	width = 400;
-	height = 200;
+	width = 500;
+	height = 400;
 	mainWindow = NULL;
 	//clipboardData = new LPTSTR[10];
 	for(int i = 0; i < 10; i++) clipboardData[i] = "";
@@ -80,6 +80,7 @@ void ClipboardPlus::mainLoop() {
 								MessageBox(NULL, "Error copying data to CB+", "Error", MB_OK);
 							} else {
 								clipboardData[index] = temp;
+								SetWindowText(clipboardEditBox[index], clipboardData[index]);
 							}
 
 							GlobalUnlock(hGlobal);
@@ -134,6 +135,50 @@ void ClipboardPlus::mainLoop() {
 
 LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch(message) {
+
+	case WM_CREATE:
+	{
+		for(int i = 0; i < 10; i++) {
+			char iBuf[3];
+			itoa(i, iBuf, 10);
+			char finalBuf[] = "#";
+			strcat(finalBuf, iBuf);
+			LPCSTR data = const_cast<const char*>(finalBuf);
+
+			CreateWindow("STATIC", "Clipboards", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 15, width, 20, hwnd, NULL, NULL, NULL);
+
+			CreateWindow("STATIC", data, WS_CHILD | WS_VISIBLE | SS_SIMPLE, 8, i * 28 + 42, 20, 14, hwnd, NULL, NULL, NULL);
+
+			clipboardEditBox[i] = CreateWindow(
+					"EDIT", clipboardData[i],
+					WS_CHILD | WS_VISIBLE | WS_BORDER | ES_READONLY | ES_AUTOHSCROLL,
+					30, 40 + i * 28, 435, 20,
+					hwnd,
+					(HMENU)i,
+					GetModuleHandle(NULL),
+					NULL);
+
+			HWND clearButton = CreateWindow(
+					"BUTTON", "Clear All",
+					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+					10, 320, 100, 30,
+					hwnd, (HMENU)BTN_CLEAR,
+					NULL, NULL);
+		}
+	} break;
+
+	case WM_COMMAND:
+	{
+		if(HIWORD(wParam) == BN_CLICKED) {
+			if(LOWORD(wParam) == BTN_CLEAR) {
+				for(int i = 0; i < 10; i++) {
+					clipboardData[i] = "";
+					SetWindowText(clipboardEditBox[i], "");
+				}
+			}
+		}
+
+	} break;
 
 	case WM_DESTROY:
 		stop();

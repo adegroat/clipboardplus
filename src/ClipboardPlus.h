@@ -7,6 +7,8 @@
 
 #include "WindowSetup.h"
 
+#define BTN_CLEAR 0x9990
+
 class ClipboardPlus {
 
 private:
@@ -18,6 +20,8 @@ private:
 	int nCmdShow;
 	MSG message;
 	LPTSTR clipboardData[10];
+
+	HWND clipboardEditBox[10];
 
 public:
 	ClipboardPlus(HINSTANCE, WNDPROC, MSG, LPSTR, int);
