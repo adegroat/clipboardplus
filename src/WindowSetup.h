@@ -7,11 +7,11 @@ class WindowSetup {
 
 private:
 	HINSTANCE hInstance;
-	char* className;
+	LPCSTR className;
 	WNDPROC windProc;
 public:
 
-	WindowSetup(HINSTANCE hInstance, char* className, WNDPROC windProc);
+	WindowSetup(HINSTANCE hInstance, LPCSTR className, WNDPROC windProc);
 	bool setup();
 };
 

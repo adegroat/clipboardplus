@@ -1,6 +1,6 @@
 #include "WindowSetup.h"
 
-WindowSetup::WindowSetup(HINSTANCE hInstance, char* className, WNDPROC windProc) : hInstance(hInstance), className(className), windProc(windProc) {
+WindowSetup::WindowSetup(HINSTANCE hInstance, LPCSTR className, WNDPROC windProc) : hInstance(hInstance), className(className), windProc(windProc) {
 
 }
 
