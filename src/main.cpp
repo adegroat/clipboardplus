@@ -1,6 +1,4 @@
-#include <windows.h>
 #include <iostream>
-#include <ctime>
 
 #include "ClipboardPlus.h"
 
