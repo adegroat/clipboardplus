@@ -118,14 +118,14 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 
 	case WM_CREATE:
 	{
+		CreateWindow("STATIC", "Clipboards", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 15, width, 20, hwnd, NULL, NULL, NULL);
+
 		for(int i = 0; i < 10; i++) {
 			char iBuf[2];
 			itoa(i, iBuf, 10);
 			char finalBuf[] = "#";
 			strcat(finalBuf, iBuf);
 			LPCSTR data = const_cast<const char*>(finalBuf);
-
-			CreateWindow("STATIC", "Clipboards", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 15, width, 20, hwnd, NULL, NULL, NULL);
 
 			CreateWindow("STATIC", data, WS_CHILD | WS_VISIBLE | SS_SIMPLE, 8, i * 28 + 42, 20, 14, hwnd, NULL, NULL, NULL);
 
@@ -139,29 +139,29 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					(HMENU)i,
 					NULL,
 					NULL);
-
-			CreateWindow(
-					"BUTTON",
-					"Clear All",
-					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-					10, 320,
-					100, 30,
-					hwnd,
-					(HMENU)BTN_CLEAR,
-					NULL,
-					NULL);
-
-			CreateWindow(
-					"BUTTON",
-					"Hide",
-					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-					120, 320,
-					100, 30,
-					hwnd,
-					(HMENU)BTN_HIDE,
-					NULL,
-					NULL);
 		}
+
+		CreateWindow(
+				"BUTTON",
+				"Clear All",
+				WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+				10, 320,
+				100, 30,
+				hwnd,
+				(HMENU)BTN_CLEAR,
+				NULL,
+				NULL);
+
+		CreateWindow(
+				"BUTTON",
+				"Hide",
+				WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+				120, 320,
+				100, 30,
+				hwnd,
+				(HMENU)BTN_HIDE,
+				NULL,
+				NULL);
 	} break;
 
 	case WM_COMMAND:
