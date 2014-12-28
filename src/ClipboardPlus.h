@@ -8,6 +8,9 @@
 #include "WindowSetup.h"
 
 #define BTN_CLEAR 0x9990
+#define BTN_HIDE  0x9991
+
+#define HOTKEY_SHOWWINDOW 0x8880
 
 class ClipboardPlus {
 

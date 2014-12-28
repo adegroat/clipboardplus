@@ -34,6 +34,8 @@ void ClipboardPlus::start() {
 			hInstance,
 			NULL);
 
+//	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
+
 	if(!mainWindow){
 		MessageBox(NULL, "Error creating window!", "Error", MB_OK);
 		return;
@@ -52,10 +54,11 @@ void ClipboardPlus::stop() {
 
 void ClipboardPlus::mainLoop() {
 	float startTime = timeMs();
+	float timer2 = timeMs();
 
 	while(running) {
 
-		if(timeMs() - startTime > 150) {
+		if(timeMs() - startTime > 200) {
 			if(keyDown(VK_CONTROL) && keyDown(0x43)) {
 
 				for(int i = 0x30; i <= 0x39; i++) {
@@ -72,7 +75,6 @@ void ClipboardPlus::mainLoop() {
 
 							if(temp != NULL) {
 								clipboardData[index] = temp;
-								SetWindowText(clipboardEditBox[index], clipboardData[index]);
 							}
 
 							GlobalUnlock(hGlobal);
@@ -105,13 +107,20 @@ void ClipboardPlus::mainLoop() {
 							MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
 						}
 
-						EmptyClipboard();
+						if(keyDown(0x56)) EmptyClipboard();
 						CloseClipboard();
 					}
 				}
 			}
 
 			startTime = timeMs();
+		}
+
+		if(timeMs() - timer2 > 300) {
+			for(int i = 0; i < 10; i++) {
+				SetWindowText(clipboardEditBox[i], clipboardData[i]);
+			}
+			timer2 = timeMs();
 		}
 
 		if(PeekMessage(&message, mainWindow, 0, 0, PM_REMOVE)) {
@@ -158,6 +167,17 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					(HMENU)BTN_CLEAR,
 					NULL,
 					NULL);
+
+			HWND hideButton = CreateWindow(
+					"BUTTON",
+					"Hide",
+					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+					120, 320,
+					100, 30,
+					hwnd,
+					(HMENU)BTN_HIDE,
+					NULL,
+					NULL);
 		}
 	} break;
 
@@ -165,18 +185,33 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	{
 		if(HIWORD(wParam) == BN_CLICKED) {
 
-			if(LOWORD(wParam) == BTN_CLEAR) {
+			switch(LOWORD(wParam)) {
+
+			case BTN_CLEAR:
 				for(int i = 0; i < 10; i++) {
 					clipboardData[i] = "";
 					SetWindowText(clipboardEditBox[i], "");
 				}
-			}
+				break;
 
+			case BTN_HIDE:
+				ShowWindow(hwnd, SW_HIDE);
+				MessageBox(NULL, "Press Ctrl+F6 to show!", "Abracadabra!", MB_OK | MB_ICONINFORMATION);
+				break;
+
+			}
 		}
 
 	} break;
 
+	case WM_HOTKEY:
+		if(wParam == HOTKEY_SHOWWINDOW) {
+			ShowWindow(hwnd, SW_SHOW);
+		}
+		break;
+
 	case WM_DESTROY:
+		UnregisterHotKey(hwnd, HOTKEY_SHOWWINDOW);
 		stop();
 		break;
 	default:
