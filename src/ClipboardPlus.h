@@ -23,7 +23,6 @@ private:
 	int nCmdShow;
 	MSG message;
 	LPTSTR clipboardData[10];
-
 	HWND clipboardEditBox[10];
 
 public:

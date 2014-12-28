@@ -23,11 +23,12 @@ void ClipboardPlus::start() {
 		MessageBox(NULL, "Error registering window!", "Error", MB_OK);
 		return;
 	}
-	mainWindow = ws.createWindow(title, width, height, WS_OVERLAPPEDWINDOW);
+	mainWindow = ws.createWindow(title, width, height, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX);
 	if(!mainWindow){
 		MessageBox(NULL, "Error creating window!", "Error", MB_OK);
 		return;
 	}
+
 	ShowWindow(mainWindow, nCmdShow);
 	UpdateWindow(mainWindow);
 
