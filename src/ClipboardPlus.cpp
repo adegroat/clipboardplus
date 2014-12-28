@@ -141,32 +141,40 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 			CreateWindow("STATIC", data, WS_CHILD | WS_VISIBLE | SS_SIMPLE, 8, i * 28 + 42, 20, 14, hwnd, NULL, NULL, NULL);
 
 			clipboardEditBox[i] = CreateWindow(
-					"EDIT", clipboardData[i],
+					"EDIT",
+					clipboardData[i],
 					WS_CHILD | WS_VISIBLE | WS_BORDER | ES_READONLY | ES_AUTOHSCROLL,
-					30, 40 + i * 28, 435, 20,
+					30, 40 + i * 28,
+					435, 20,
 					hwnd,
 					(HMENU)i,
 					GetModuleHandle(NULL),
 					NULL);
 
 			HWND clearButton = CreateWindow(
-					"BUTTON", "Clear All",
+					"BUTTON",
+					"Clear All",
 					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-					10, 320, 100, 30,
-					hwnd, (HMENU)BTN_CLEAR,
-					NULL, NULL);
+					10, 320,
+					100, 30,
+					hwnd,
+					(HMENU)BTN_CLEAR,
+					NULL,
+					NULL);
 		}
 	} break;
 
 	case WM_COMMAND:
 	{
 		if(HIWORD(wParam) == BN_CLICKED) {
+
 			if(LOWORD(wParam) == BTN_CLEAR) {
 				for(int i = 0; i < 10; i++) {
 					clipboardData[i] = "";
 					SetWindowText(clipboardEditBox[i], "");
 				}
 			}
+
 		}
 
 	} break;
