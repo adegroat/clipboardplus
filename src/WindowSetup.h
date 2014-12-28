@@ -12,7 +12,8 @@ private:
 public:
 
 	WindowSetup(HINSTANCE hInstance, LPCSTR className, WNDPROC windProc);
-	bool setup();
+	bool registerClass();
+	HWND createWindow(LPCSTR title, int width, int height, int style);
 };
 
 #endif

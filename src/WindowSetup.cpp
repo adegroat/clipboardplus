@@ -4,7 +4,7 @@ WindowSetup::WindowSetup(HINSTANCE hInstance, LPCSTR className, WNDPROC windProc
 
 }
 
-bool WindowSetup::setup() {
+bool WindowSetup::registerClass() {
 
 	WNDCLASSEX wc;
 
@@ -18,8 +18,22 @@ bool WindowSetup::setup() {
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE+1);
+	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE); // COLOR_BTNFACE
 	wc.lpszMenuName = NULL;
 
 	return RegisterClassEx(&wc);
+}
+
+HWND WindowSetup::createWindow(LPCSTR title, int width, int height, int style) {
+
+	return CreateWindow(
+			title,
+			title,
+			style,
+			CW_USEDEFAULT, CW_USEDEFAULT,
+			width, height,
+			NULL,
+			NULL,
+			hInstance,
+			NULL);
 }

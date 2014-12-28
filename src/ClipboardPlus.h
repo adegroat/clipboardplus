@@ -30,7 +30,7 @@ public:
 	ClipboardPlus(HINSTANCE, WNDPROC, MSG, LPSTR, int);
 	ClipboardPlus() {  }
 	LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
-	WNDPROC wp;
+	WNDPROC wProc;
 	void start();
 	void mainLoop();
 	void stop();

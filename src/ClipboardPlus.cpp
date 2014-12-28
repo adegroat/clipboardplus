@@ -2,9 +2,9 @@
 
 ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR lpCmdLine, int nCmdShow) {
 	this->hInstance = hInstance;
-	this->wp = wp;
-	this->nCmdShow = nCmdShow;
+	this->wProc = wp;
 	this->message = message;
+	this->nCmdShow = nCmdShow;
 	running = false;
 	title = "Clipboard+";
 	width = 500;
@@ -18,30 +18,20 @@ void ClipboardPlus::start() {
 
 	running = true;
 
-	WindowSetup ws(hInstance, title, wp);
-	if(!ws.setup()){
+	WindowSetup ws(hInstance, title, wProc);
+	if(!ws.registerClass()){
 		MessageBox(NULL, "Error registering window!", "Error", MB_OK);
 		return;
 	}
-	mainWindow = CreateWindow(
-			title,
-			title,
-			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT,
-			width, height,
-			NULL,
-			NULL,
-			hInstance,
-			NULL);
-
-	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
-
+	mainWindow = ws.createWindow(title, width, height, WS_OVERLAPPEDWINDOW);
 	if(!mainWindow){
 		MessageBox(NULL, "Error creating window!", "Error", MB_OK);
 		return;
 	}
 	ShowWindow(mainWindow, nCmdShow);
 	UpdateWindow(mainWindow);
+
+	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
 
 	mainLoop();
 }
@@ -54,7 +44,6 @@ void ClipboardPlus::stop() {
 
 void ClipboardPlus::mainLoop() {
 	float startTime = timeMs();
-	float timer2 = timeMs();
 
 	while(running) {
 
@@ -118,13 +107,6 @@ void ClipboardPlus::mainLoop() {
 			startTime = timeMs();
 		}
 
-//		if(timeMs() - timer2 > 250) {
-//			for(int i = 0; i < 10; i++) {
-//				SetWindowTextA(clipboardEditBox[i], (LPCSTR)clipboardData[i]);
-//			}
-//			timer2 = timeMs();
-//		}
-
 		if(PeekMessage(&message, mainWindow, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&message);
 			DispatchMessage(&message);
@@ -156,10 +138,10 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					435, 20,
 					hwnd,
 					(HMENU)i,
-					GetModuleHandle(NULL),
+					NULL,
 					NULL);
 
-			HWND clearButton = CreateWindow(
+			CreateWindow(
 					"BUTTON",
 					"Clear All",
 					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
@@ -170,7 +152,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					NULL,
 					NULL);
 
-			HWND hideButton = CreateWindow(
+			CreateWindow(
 					"BUTTON",
 					"Hide",
 					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
