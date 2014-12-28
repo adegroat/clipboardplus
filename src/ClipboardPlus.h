@@ -26,7 +26,6 @@ private:
 public:
 	ClipboardPlus(HINSTANCE, WNDPROC, MSG, LPSTR, int);
 	ClipboardPlus() {  }
-	~ClipboardPlus();
 	LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
 	WNDPROC wp;
 	void start();

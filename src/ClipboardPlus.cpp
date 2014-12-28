@@ -13,10 +13,6 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR
 	for(int i = 0; i < 10; i++) clipboardData[i] = "";
 }
 
-ClipboardPlus::~ClipboardPlus() {
-//	delete[] clipboardData;
-}
-
 void ClipboardPlus::start() {
 	if(running) return;
 
@@ -68,16 +64,13 @@ void ClipboardPlus::mainLoop() {
 
 						if(!OpenClipboard(mainWindow)) {
 							MessageBox(mainWindow, "Error opening clipboard! (copy)", "Error", MB_OK);
-							//stop();
 						}
 
 						HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
 						if(hGlobal) {
 							LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
 
-							if(temp == NULL) {
-								MessageBox(NULL, "Error copying data to CB+", "Error", MB_OK);
-							} else {
+							if(temp != NULL) {
 								clipboardData[index] = temp;
 								SetWindowText(clipboardEditBox[index], clipboardData[index]);
 							}
@@ -115,7 +108,7 @@ void ClipboardPlus::mainLoop() {
 							MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
 						}
 
-						if(keyDown(0x56)) EmptyClipboard();
+						EmptyClipboard();
 						CloseClipboard();
 					}
 				}
@@ -137,7 +130,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	case WM_CREATE:
 	{
 		for(int i = 0; i < 10; i++) {
-			char iBuf[3];
+			char iBuf[2];
 			itoa(i, iBuf, 10);
 			char finalBuf[] = "#";
 			strcat(finalBuf, iBuf);
