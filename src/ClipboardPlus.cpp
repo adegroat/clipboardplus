@@ -64,7 +64,6 @@ void ClipboardPlus::mainLoop() {
 							GlobalUnlock(hGlobal);
 
 							if(temp != NULL) {
-								std::cout << temp << std::endl;
 								clipboardData[index] = temp;
 								SetWindowTextA(clipboardEditBox[index], (LPCSTR)clipboardData[index]);
 							}
@@ -133,7 +132,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 			clipboardEditBox[i] = CreateWindow(
 					"EDIT",
 					clipboardData[i],
-					WS_CHILD | WS_VISIBLE | WS_BORDER | WS_DISABLED | ES_READONLY | ES_AUTOHSCROLL,
+					WS_CHILD | WS_VISIBLE | WS_BORDER | WS_DISABLED | ES_AUTOHSCROLL,
 					30, 40 + i * 28,
 					435, 20,
 					hwnd,
