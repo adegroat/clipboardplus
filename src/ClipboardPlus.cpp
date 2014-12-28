@@ -76,8 +76,6 @@ void ClipboardPlus::mainLoop() {
 							}
 
 							GlobalUnlock(hGlobal);
-						} else {
-							MessageBox(NULL, "Couldn't copy data", "Error", MB_OK);
 						}
 
 						EmptyClipboard();
@@ -103,8 +101,7 @@ void ClipboardPlus::mainLoop() {
 						memcpy(temp, clipboardData[index], strlen(clipboardData[index]) + 1);
 						GlobalUnlock(hGlobal);
 
-						if(!SetClipboardData(CF_TEXT, hGlobal)){
-							std::cout << GetLastError() << std::endl;
+						if(!SetClipboardData(CF_TEXT, hGlobal)) {
 							MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
 						}
 
