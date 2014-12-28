@@ -34,7 +34,7 @@ void ClipboardPlus::start() {
 			hInstance,
 			NULL);
 
-//	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
+	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
 
 	if(!mainWindow){
 		MessageBox(NULL, "Error creating window!", "Error", MB_OK);
@@ -58,7 +58,7 @@ void ClipboardPlus::mainLoop() {
 
 	while(running) {
 
-		if(timeMs() - startTime > 200) {
+		if(timeMs() - startTime > 150) {
 			if(keyDown(VK_CONTROL) && keyDown(0x43)) {
 
 				for(int i = 0x30; i <= 0x39; i++) {
@@ -72,12 +72,14 @@ void ClipboardPlus::mainLoop() {
 						HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
 						if(hGlobal) {
 							LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
+							GlobalUnlock(hGlobal);
 
 							if(temp != NULL) {
+								std::cout << temp << std::endl;
 								clipboardData[index] = temp;
+								SetWindowTextA(clipboardEditBox[index], (LPCSTR)clipboardData[index]);
 							}
 
-							GlobalUnlock(hGlobal);
 						}
 
 						EmptyClipboard();
@@ -116,12 +118,12 @@ void ClipboardPlus::mainLoop() {
 			startTime = timeMs();
 		}
 
-		if(timeMs() - timer2 > 300) {
-			for(int i = 0; i < 10; i++) {
-				SetWindowText(clipboardEditBox[i], clipboardData[i]);
-			}
-			timer2 = timeMs();
-		}
+//		if(timeMs() - timer2 > 250) {
+//			for(int i = 0; i < 10; i++) {
+//				SetWindowTextA(clipboardEditBox[i], (LPCSTR)clipboardData[i]);
+//			}
+//			timer2 = timeMs();
+//		}
 
 		if(PeekMessage(&message, mainWindow, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&message);
@@ -149,7 +151,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 			clipboardEditBox[i] = CreateWindow(
 					"EDIT",
 					clipboardData[i],
-					WS_CHILD | WS_VISIBLE | WS_BORDER | ES_READONLY | ES_AUTOHSCROLL,
+					WS_CHILD | WS_VISIBLE | WS_BORDER | WS_DISABLED | ES_READONLY | ES_AUTOHSCROLL,
 					30, 40 + i * 28,
 					435, 20,
 					hwnd,
