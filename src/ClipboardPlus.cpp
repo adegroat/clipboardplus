@@ -10,7 +10,6 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR
 	width = 500;
 	height = 400;
 	mainWindow = NULL;
-	//clipboardData = new LPTSTR[10];
 	for(int i = 0; i < 10; i++) clipboardData[i] = "";
 }
 
@@ -61,10 +60,10 @@ void ClipboardPlus::mainLoop() {
 	while(running) {
 
 		if(timeMs() - startTime > 150) {
-			if(GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState(0x43)) {
+			if(keyDown(VK_CONTROL) && keyDown(0x43)) {
 
 				for(int i = 0x30; i <= 0x39; i++) {
-					if(GetAsyncKeyState(i)) {
+					if(keyDown(i)) {
 						int index = i - 0x30;
 
 						if(!OpenClipboard(mainWindow)) {
@@ -95,16 +94,15 @@ void ClipboardPlus::mainLoop() {
 			}
 
 			// TODO: Figure out Ctrl+V+NUM instead of Ctrl+NUM+V
-			if(GetAsyncKeyState(VK_CONTROL) /*&& GetAsyncKeyState(0x56)*/) {
+			if(keyDown(VK_CONTROL) /*&& keyDown(0x56)*/) {
 
 				for(int i = 0x30; i <= 0x39; i++) {
 
-					if(GetAsyncKeyState(i)) {
+					if(keyDown(i)) {
 						int index = i - 0x30;
 
 						if(!OpenClipboard(mainWindow)) {
 							MessageBox(mainWindow, "Error opening clipboard! (paste)", "Error", MB_OK);
-							//stop();
 						}
 
 						HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, strlen(clipboardData[index]) + 1);
@@ -117,7 +115,7 @@ void ClipboardPlus::mainLoop() {
 							MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
 						}
 
-						if(GetAsyncKeyState(0x56)) EmptyClipboard();
+						if(keyDown(0x56)) EmptyClipboard();
 						CloseClipboard();
 					}
 				}

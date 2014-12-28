@@ -35,6 +35,9 @@ public:
 	bool isRunning() { return running; }
 	long timeMs() { return ((float)clock() / CLOCKS_PER_SEC) * 1000; }
 
+	// 1000 0000 0000 0000 = 0x8000
+	bool keyDown(int vKey) { return (GetAsyncKeyState(vKey) & 0x8000) ? 1 : 0; }
+
 
 };
 
