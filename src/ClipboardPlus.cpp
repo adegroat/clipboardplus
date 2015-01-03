@@ -1,8 +1,9 @@
 #include "ClipboardPlus.h"
 
-ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR lpCmdLine, int nCmdShow) {
+ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookProc, MSG message, LPSTR lpCmdLine, int nCmdShow) {
 	this->hInstance = hInstance;
 	this->wProc = wp;
+	this->kbProc = kbHookProc;
 	this->message = message;
 	this->nCmdShow = nCmdShow;
 	running = false;
@@ -10,13 +11,28 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, MSG message, LPSTR
 	width = 500;
 	height = 400;
 	mainWindow = NULL;
-	for(int i = 0; i < 10; i++) clipboardData[i] = "";
+	kbHook = NULL;
+	this->ctrlDown = false;
+	this->cDown = false;
+	this->vDown = false;
+	this->dDown = false;
+	this->numKey = -1;
+}
+
+bool CALLBACK ClipboardPlus::setChildrenFontProc(HWND hwnd, LPARAM lParam) {
+	SendMessage(hwnd, WM_SETFONT, (WPARAM)lParam, 0);
+	return true;
 }
 
 void ClipboardPlus::start() {
 	if(running) return;
 
 	running = true;
+
+	for(int i = 0; i < 10; i++) {
+		clipboardData[i] = new char[1];
+		memcpy(clipboardData[i], "", 1);
+	}
 
 	WindowSetup ws(hInstance, title, wProc);
 	if(!ws.registerClass()){
@@ -29,89 +45,51 @@ void ClipboardPlus::start() {
 		return;
 	}
 
+	EnumChildWindows(mainWindow, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
+
 	ShowWindow(mainWindow, nCmdShow);
 	UpdateWindow(mainWindow);
 
+	HINSTANCE kbHookLib = LoadLibrary("kbhook.dll");
+	if(kbHookLib == NULL) {
+		MessageBox(mainWindow, "Error loading kbhook.dll", "Error", MB_OK);
+		stop();
+	}
+
+	HHOOK (*installHook)(HINSTANCE, HOOKPROC) = (HHOOK (*)(HINSTANCE, HOOKPROC))GetProcAddress(kbHookLib, "installHook");
+	if(installHook == NULL) {
+		MessageBox(mainWindow, "Error getting hook address!", "Error", MB_OK);
+		stop();
+	}
+
+	kbHook = installHook(kbHookLib, kbProc);
+	if(kbHook == NULL) {
+		MessageBox(mainWindow, "Error installing hook!", "Error", MB_OK);
+		stop();
+	}
+
 	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
 
-	mainLoop();
+	while(GetMessage(&message, mainWindow, 0, 0) > 0) {
+		TranslateMessage(&message);
+		DispatchMessage(&message);
+	}
 }
 
-void ClipboardPlus::stop() {
+void ClipboardPlus::stop(const char message[128]) {
 	if(!running) return;
 	running = false;
+	std::cout << "Message: " << message << "\nError: " << GetLastError() << std::endl;
 	PostQuitMessage(0);
 }
 
-void ClipboardPlus::mainLoop() {
-	float startTime = timeMs();
-
-	while(running) {
-
-		if(timeMs() - startTime > 150) {
-			if(keyDown(VK_CONTROL) && keyDown(0x43)) {
-
-				for(int i = 0x30; i <= 0x39; i++) {
-					if(keyDown(i)) {
-						int index = i - 0x30;
-
-						if(!OpenClipboard(mainWindow)) {
-							MessageBox(mainWindow, "Error opening clipboard! (copy)", "Error", MB_OK);
-						}
-
-						HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
-						if(hGlobal) {
-							LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
-							GlobalUnlock(hGlobal);
-
-							if(temp != NULL) {
-								clipboardData[index] = temp;
-								SetWindowTextA(clipboardEditBox[index], (LPCSTR)clipboardData[index]);
-							}
-
-						}
-
-						EmptyClipboard();
-						CloseClipboard();
-					}
-				}
-			}
-
-			// TODO: Figure out Ctrl+V+NUM instead of Ctrl+NUM+V
-			if(keyDown(VK_CONTROL) /*&& keyDown(0x56)*/) {
-
-				for(int i = 0x30; i <= 0x39; i++) {
-
-					if(keyDown(i)) {
-						int index = i - 0x30;
-
-						if(!OpenClipboard(mainWindow)) {
-							MessageBox(mainWindow, "Error opening clipboard! (paste)", "Error", MB_OK);
-						}
-
-						HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, strlen(clipboardData[index]) + 1);
-						LPTSTR temp = (LPTSTR)GlobalLock(hGlobal);
-						memcpy(temp, clipboardData[index], strlen(clipboardData[index]) + 1);
-						GlobalUnlock(hGlobal);
-
-						if(!SetClipboardData(CF_TEXT, hGlobal)) {
-							MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
-						}
-
-						if(keyDown(0x56)) EmptyClipboard();
-						CloseClipboard();
-					}
-				}
-			}
-
-			startTime = timeMs();
-		}
-
-		if(PeekMessage(&message, mainWindow, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&message);
-			DispatchMessage(&message);
-		}
+void ClipboardPlus::cleanUp() {
+	for(int i = 0; i < 10; i++) {
+		delete[] clipboardData[i];
 	}
+
+	UnhookWindowsHookEx(kbHook);
+	UnregisterHotKey(mainWindow, HOTKEY_SHOWWINDOW);
 }
 
 LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -133,11 +111,22 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 			clipboardEditBox[i] = CreateWindow(
 					"EDIT",
 					clipboardData[i],
-					WS_CHILD | WS_VISIBLE | WS_BORDER | WS_DISABLED | ES_AUTOHSCROLL,
+					WS_CHILD | WS_VISIBLE | WS_BORDER | ES_READONLY | ES_AUTOHSCROLL,
 					30, 40 + i * 28,
-					435, 20,
+					425, 20,
 					hwnd,
 					(HMENU)i,
+					NULL,
+					NULL);
+
+			CreateWindow(
+					"BUTTON",
+					"X",
+					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+					460, 40 + i * 28,
+					20, 20,
+					hwnd,
+					(HMENU)(0x5550 + i),
 					NULL,
 					NULL);
 		}
@@ -146,8 +135,8 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 				"BUTTON",
 				"Clear All",
 				WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-				10, 320,
-				100, 30,
+				30, 320,
+				80, 25,
 				hwnd,
 				(HMENU)BTN_CLEAR,
 				NULL,
@@ -158,7 +147,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 				"Hide",
 				WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
 				120, 320,
-				100, 30,
+				80, 25,
 				hwnd,
 				(HMENU)BTN_HIDE,
 				NULL,
@@ -173,7 +162,8 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 
 			case BTN_CLEAR:
 				for(int i = 0; i < 10; i++) {
-					clipboardData[i] = "";
+					clipboardData[i] = new char[1];
+					memcpy(clipboardData[i], "", 1);
 					SetWindowText(clipboardEditBox[i], "");
 				}
 				break;
@@ -182,6 +172,23 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 				ShowWindow(hwnd, SW_HIDE);
 				MessageBox(NULL, "Press Ctrl+F6 to show!", "Abracadabra!", MB_OK | MB_ICONINFORMATION);
 				break;
+
+			case BTN_CLEAR0:
+			case BTN_CLEAR1:
+			case BTN_CLEAR2:
+			case BTN_CLEAR3:
+			case BTN_CLEAR4:
+			case BTN_CLEAR5:
+			case BTN_CLEAR6:
+			case BTN_CLEAR7:
+			case BTN_CLEAR8:
+			case BTN_CLEAR9:
+			{
+				int index = LOWORD(wParam) - 0x5550;
+				clipboardData[index] = new char[1];
+				memcpy(clipboardData[index], "", 1);
+				SetWindowText(clipboardEditBox[index], "");
+			} break;
 
 			}
 		}
@@ -195,12 +202,92 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 		break;
 
 	case WM_DESTROY:
-		UnregisterHotKey(hwnd, HOTKEY_SHOWWINDOW);
+		cleanUp();
 		stop();
 		break;
 	default:
-		return DefWindowProcA(hwnd, message, wParam, lParam);
+		return DefWindowProc(hwnd, message, wParam, lParam);
 	}
 
 	return 0;
+}
+
+LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+	int keyCode = ((KBDLLHOOKSTRUCT*)lParam)->vkCode;
+	static bool done = false;
+
+	switch(wParam) {
+		case WM_KEYDOWN:
+		{
+			if(keyCode == VK_LCONTROL) ctrlDown = true;
+			if(keyCode == 0x43) cDown = true;
+			if(keyCode == 0x56) vDown = true;
+			if(keyCode == 0x44) dDown = true;
+			if(keyCode >= 0x30 && keyCode <= 0x39) numKey = keyCode;
+
+			if(ctrlDown && cDown && numKey != -1 && !done) {
+				int index = numKey - 0x30;
+
+				if(!OpenClipboard(mainWindow)) {
+					MessageBox(mainWindow, "Error opening clipboard! (copy)", "Error", MB_OK);
+				}
+
+				HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
+				if(hGlobal) {
+					LPSTR temp = (LPSTR)GlobalLock(hGlobal);
+					GlobalUnlock(hGlobal);
+
+					if(temp != NULL) {
+						if(dDown) {
+							strcat(clipboardData[index], const_cast<const LPSTR>(temp));
+						} else {
+							clipboardData[index] = new char[strlen(temp) + 1];
+							memcpy(clipboardData[index], temp, strlen(temp) + 1);
+						}
+					}
+				}
+
+				EmptyClipboard();
+				CloseClipboard();
+				done = true;
+			}
+
+			if(ctrlDown && numKey != -1 && !cDown) {
+				int index = numKey - 0x30;
+
+				if(!OpenClipboard(mainWindow)) {
+					MessageBox(mainWindow, "Error opening clipboard! (paste)", "Error", MB_OK);
+				}
+				EmptyClipboard();
+
+				HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, strlen(clipboardData[index]) + 1);
+				LPSTR temp = (LPSTR)GlobalLock(hGlobal);
+				memcpy(temp, clipboardData[index], strlen(clipboardData[index]) + 1);
+				GlobalUnlock(hGlobal);
+
+				if(!SetClipboardData(CF_TEXT, hGlobal)) {
+					MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
+				}
+
+				CloseClipboard();
+			}
+
+		} break;
+
+		case WM_KEYUP:
+		{
+			if(keyCode == VK_LCONTROL) ctrlDown = false;
+			if(keyCode == 0x43) cDown = false;
+			if(keyCode == 0x56) vDown = false;
+			if(keyCode == 0x44) dDown = false;
+			numKey = -1;
+			done = false;
+
+			for(int i = 0; i < 10; i++){
+				SetWindowTextA(clipboardEditBox[i], clipboardData[i]);
+			}
+		} break;
+
+	}
+	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
