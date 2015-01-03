@@ -54,7 +54,6 @@ public:
 	void stop(const char message[128] = "NONE");
 	void cleanUp();
 	bool isRunning() { return running; }
-	//static bool CALLBACK setChildrenFontProc(HWND hwnd, LPARAM lParam) { SendMessage(hwnd, WM_SETFONT, (WPARAM)lParam, 0); return true;}
 	static bool CALLBACK setChildrenFontProc(HWND, LPARAM);
 };
 
