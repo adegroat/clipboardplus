@@ -23,14 +23,13 @@ bool ClipboardHandler::openClipboard() {
 bool ClipboardHandler::emptyClipboard() {
 	openClipboard();
 	bool status = EmptyClipboard();
-	closeClipboard();
+	CloseClipboard();
 	return status;
 }
 
 std::string ClipboardHandler::getClipboardText() {
-	std::string tempStr;
-
 	openClipboard();
+	std::string tempStr;
 
 	HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
 	if(hGlobal != NULL) {
@@ -50,11 +49,9 @@ std::string ClipboardHandler::getClipboardText() {
 }
 
 void ClipboardHandler::setClipboardText(std::string newText) {
-	char* buffer = const_cast<char*>(getClipboardText().c_str());
-
 	openClipboard();
 	EmptyClipboard();
-	int len = strlen(buffer) + 1;
+	int len = newText.length() + 1;
 	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, len);
 	char* temp = (char*)GlobalLock(hGlobal);
 	memcpy(temp, newText.c_str(), len);
@@ -64,5 +61,5 @@ void ClipboardHandler::setClipboardText(std::string newText) {
 		notify("setClipboardText(), Could not set clipboard text");
 	}
 
-	closeClipboard();
+	CloseClipboard();
 }

@@ -3,9 +3,9 @@
 
 #include <windows.h>
 #include <iostream>
-#include <ctime>
 
 #include "WindowSetup.h"
+#include "ClipboardHandler.h"
 
 #define BTN_CLEAR 0x9990
 #define BTN_HIDE  0x9991
@@ -39,6 +39,7 @@ private:
 	MSG message;
 	LPSTR clipboardData[10];
 	HWND clipboardEditBox[10];
+	ClipboardHandler* cbHandler;
 
 public:
 	ClipboardPlus(HINSTANCE, WNDPROC, HOOKPROC, MSG, LPSTR, int);

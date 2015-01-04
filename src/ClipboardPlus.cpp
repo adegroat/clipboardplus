@@ -17,6 +17,7 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	this->vDown = false;
 	this->dDown = false;
 	this->numKey = -1;
+	cbHandler = new ClipboardHandler(mainWindow);
 }
 
 bool CALLBACK ClipboardPlus::setChildrenFontProc(HWND hwnd, LPARAM lParam) {
@@ -87,6 +88,7 @@ void ClipboardPlus::cleanUp() {
 	for(int i = 0; i < 10; i++) {
 		delete[] clipboardData[i];
 	}
+	delete cbHandler;
 
 	UnhookWindowsHookEx(kbHook);
 	UnregisterHotKey(mainWindow, HOTKEY_SHOWWINDOW);
@@ -228,48 +230,23 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 			if(ctrlDown && cDown && numKey != -1 && !done) {
 				int index = numKey - 0x30;
 
-				if(!OpenClipboard(mainWindow)) {
-					MessageBox(mainWindow, "Error opening clipboard! (copy)", "Error", MB_OK);
+				std::string cbData = cbHandler->getClipboardText();
+
+				if(dDown) {
+					strcat(clipboardData[index], cbData.c_str());
+				} else {
+					clipboardData[index] = new char[cbData.length()];
+					memcpy(clipboardData[index], cbData.c_str(), cbData.length() + 1);
 				}
 
-				HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
-				if(hGlobal) {
-					LPSTR temp = (LPSTR)GlobalLock(hGlobal);
-					GlobalUnlock(hGlobal);
-
-					if(temp != NULL) {
-						if(dDown) {
-							strcat(clipboardData[index], const_cast<const LPSTR>(temp));
-						} else {
-							clipboardData[index] = new char[strlen(temp) + 1];
-							memcpy(clipboardData[index], temp, strlen(temp) + 1);
-						}
-					}
-				}
-
-				EmptyClipboard();
-				CloseClipboard();
+				cbHandler->emptyClipboard();
 				done = true;
 			}
 
 			if(ctrlDown && numKey != -1 && !cDown) {
 				int index = numKey - 0x30;
 
-				if(!OpenClipboard(mainWindow)) {
-					MessageBox(mainWindow, "Error opening clipboard! (paste)", "Error", MB_OK);
-				}
-				EmptyClipboard();
-
-				HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, strlen(clipboardData[index]) + 1);
-				LPSTR temp = (LPSTR)GlobalLock(hGlobal);
-				memcpy(temp, clipboardData[index], strlen(clipboardData[index]) + 1);
-				GlobalUnlock(hGlobal);
-
-				if(!SetClipboardData(CF_TEXT, hGlobal)) {
-					MessageBox(mainWindow, "Error setting  clipboard data!", "Error", MB_OK);
-				}
-
-				CloseClipboard();
+				cbHandler->setClipboardText(clipboardData[index]);
 			}
 
 		} break;

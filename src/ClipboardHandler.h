@@ -10,6 +10,7 @@ class ClipboardHandler {
 private:
 	HWND hwnd;
 	void notify(std::string message);
+	std::string clipboardData[10];
 
 public:
 	ClipboardHandler(HWND hwnd);
