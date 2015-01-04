@@ -1,7 +1,8 @@
 #include "WindowSetup.h"
 
 WindowSetup::WindowSetup(HINSTANCE hInstance, LPCSTR className, WNDPROC windProc) : hInstance(hInstance), className(className), windProc(windProc) {
-
+	iconSmall = (HICON)LoadImageA(NULL, "icon.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+	iconBig = (HICON)LoadImageA(NULL, "icon.ico", IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
 }
 
 bool WindowSetup::registerClass() {
@@ -15,8 +16,8 @@ bool WindowSetup::registerClass() {
 	wc.hInstance = hInstance;
 	wc.lpszClassName = className;
 	wc.lpfnWndProc = windProc;
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIcon = iconBig;
+	wc.hIconSm = iconSmall;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE); // COLOR_BTNFACE
 	wc.lpszMenuName = NULL;
@@ -30,7 +31,7 @@ HWND WindowSetup::createWindow(LPCSTR title, int width, int height, int style) {
 			title,
 			title,
 			style,
-			CW_USEDEFAULT, CW_USEDEFAULT,
+			100, 100,
 			width, height,
 			NULL,
 			NULL,
