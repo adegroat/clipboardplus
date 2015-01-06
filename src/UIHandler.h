@@ -25,6 +25,7 @@ public:
 	HWND createIconButton(std::string iconFileName, int x, int y, int width, int height, int iconWidth, int iconHeight, int id);
 	HWND createLabel(std::string text, int x, int y, bool center);
 	HWND createEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id);
+	HWND createMultiLineEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id);
 
 	HWND getCBEditBox(int index) { return clipboardEditBox[index]; }
 	void setupUI();
@@ -45,6 +46,17 @@ public:
 	static const int BTN_CLEAR7 = 2007;
 	static const int BTN_CLEAR8 = 2008;
 	static const int BTN_CLEAR9 = 2009;
+
+	static const int BTN_EDIT0 = 2500;
+	static const int BTN_EDIT1 = 2501;
+	static const int BTN_EDIT2 = 2502;
+	static const int BTN_EDIT3 = 2503;
+	static const int BTN_EDIT4 = 2504;
+	static const int BTN_EDIT5 = 2505;
+	static const int BTN_EDIT6 = 2506;
+	static const int BTN_EDIT7 = 2507;
+	static const int BTN_EDIT8 = 2508;
+	static const int BTN_EDIT9 = 2509;
 };
 
 #endif

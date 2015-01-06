@@ -16,7 +16,7 @@ bool CALLBACK UIHandler::setChildrenFontProc(HWND hwnd, LPARAM lParam) {
 }
 
 int UIHandler::messageBox(std::string message, std::string title, HWND parentHwnd, int style) {
-	MessageBox(parentHwnd, message.c_str(), title.c_str(), style);
+	return MessageBox(parentHwnd, message.c_str(), title.c_str(), style);
 }
 
 HWND UIHandler::createButton(std::string text, int x, int y, int width, int height, int id) {
@@ -70,12 +70,25 @@ HWND UIHandler::createLabel(std::string text, int x, int y, bool center) {
 }
 
 HWND UIHandler::createEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id) {
-	int shouldReadOnly = 0;
-	if(readOnly) shouldReadOnly = ES_READONLY;
+	int shouldReadOnly = readOnly ? ES_READONLY : 0;
 	return CreateWindow(
 			"EDIT",
 			defaultText.c_str(),
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | shouldReadOnly,
+			x, y,
+			width, height,
+			parentHwnd,
+			(HMENU)id,
+			NULL,
+			NULL);
+}
+
+HWND UIHandler::createMultiLineEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id) {
+	int shouldReadOnly = readOnly ? ES_READONLY : 0;
+	return CreateWindow(
+			"EDIT",
+			defaultText.c_str(),
+			WS_CHILD | WS_VISIBLE | WS_BORDER | shouldReadOnly | ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
 			x, y,
 			width, height,
 			parentHwnd,
@@ -90,9 +103,10 @@ void UIHandler::setupUI() {
 	for(int i = 0; i < 10; i++) {
 		char label[3] = {'#', (char)(i + 0x30), '\0'};
 		createLabel(label, 8, 42 + i * 28, false);
-		clipboardEditBox[i] = createEditBox("", 30, 40 + i * 28, 430, 20, true, 3000 + i);
+		clipboardEditBox[i] = createEditBox("", 30, 40 + i * 28, 400, 20, true, 3000 + i);
 
-		createButton("X", 465, 40 + i * 28, 20, 20, 2000 + i); // 2000 + i = BTN_CLEAR0, BTN_CLEAR1, etc
+		createIconButton("delete.ico", 435, 40 + i * 28, 22, 22, 16, 16, 2000 + i);
+		createIconButton("edit.ico", 465, 40 + i * 28, 22, 22, 16, 16, 2500 + i);
 	}
 
 	createButton("Clear All", 30, 320, false, BTN_CLEAR);

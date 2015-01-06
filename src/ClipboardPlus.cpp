@@ -28,8 +28,6 @@ void ClipboardPlus::start() {
 		clipboardData[i] = "";
 	}
 
-
-
 	WindowSetup ws(hInstance, title, wProc);
 	if(!ws.registerClass()){
 		UIHandler::messageBox("Error registering window!");
@@ -44,8 +42,6 @@ void ClipboardPlus::start() {
 
 	ShowWindow(mainWindow, nCmdShow);
 	UpdateWindow(mainWindow);
-
-
 
 	HINSTANCE kbHookLib = LoadLibrary("clipboardhook.dll");
 	if(kbHookLib == NULL) {
@@ -68,11 +64,7 @@ void ClipboardPlus::start() {
 		return;
 	}
 
-
-
 	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
-
-
 
 	while(GetMessage(&message, mainWindow, 0, 0) > 0) {
 		TranslateMessage(&message);
@@ -152,6 +144,21 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 				int index = LOWORD(wParam) - 2000;
 				clipboardData[index] = "";
 				SetWindowText(uiHandler->getCBEditBox(index), "");
+			} break;
+
+			case UIHandler::BTN_EDIT0:
+			case UIHandler::BTN_EDIT1:
+			case UIHandler::BTN_EDIT2:
+			case UIHandler::BTN_EDIT3:
+			case UIHandler::BTN_EDIT4:
+			case UIHandler::BTN_EDIT5:
+			case UIHandler::BTN_EDIT6:
+			case UIHandler::BTN_EDIT7:
+			case UIHandler::BTN_EDIT8:
+			case UIHandler::BTN_EDIT9:
+			{
+				// Show Edit box
+
 			} break;
 
 			}
