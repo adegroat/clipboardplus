@@ -65,6 +65,9 @@ void ClipboardPlus::start() {
 	}
 
 	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
+	for(int i = 0; i < 10; i++) {
+		RegisterHotKey(mainWindow, HOTKEY_CTRLNUM + i, MOD_CONTROL, 0x30 + i);
+	}
 
 	while(GetMessage(&message, mainWindow, 0, 0) > 0) {
 		TranslateMessage(&message);
@@ -85,6 +88,9 @@ void ClipboardPlus::cleanUp() {
 
 	UnhookWindowsHookEx(kbHook);
 	UnregisterHotKey(mainWindow, HOTKEY_SHOWWINDOW);
+	for(int i = 0; i < 10; i++) {
+		UnregisterHotKey(mainWindow, HOTKEY_CTRLNUM + i);
+	}
 }
 
 void ClipboardPlus::setupUI(HWND hwnd) {

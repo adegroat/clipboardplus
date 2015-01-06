@@ -8,6 +8,7 @@
 #include "ClipboardHandler.h"
 
 #define HOTKEY_SHOWWINDOW 8880
+#define HOTKEY_CTRLNUM 9990
 
 class ClipboardPlus {
 
