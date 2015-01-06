@@ -7,6 +7,8 @@ UIHandler::UIHandler(HWND pHwnd, std::string fontName) : parentHwnd(pHwnd), font
 	GetWindowRect(parentHwnd, parentRect);
 	parentWidth = parentRect->right - parentRect->left;
 	parentHeight = parentRect->bottom - parentRect->top;
+	parentX = parentRect->left;
+	parentY = parentRect->top;
 	font = CreateFont(16, 7, 0, 0, 0, TRUE, 0, 0, 0, 0, 0, 0, 0, "Arial");
 }
 
@@ -103,10 +105,10 @@ void UIHandler::setupUI() {
 	for(int i = 0; i < 10; i++) {
 		char label[3] = {'#', (char)(i + 0x30), '\0'};
 		createLabel(label, 8, 42 + i * 28, false);
-		clipboardEditBox[i] = createEditBox("", 30, 40 + i * 28, 400, 20, true, 3000 + i);
+		clipboardEditBox[i] = createEditBox("", 30, 40 + i * 28, 430, 20, true, 3000 + i);
 
-		createIconButton("delete.ico", 435, 40 + i * 28, 22, 22, 16, 16, 2000 + i);
-		createIconButton("edit.ico", 465, 40 + i * 28, 22, 22, 16, 16, 2500 + i);
+		createIconButton("delete.ico", 465, 40 + i * 28, 22, 22, 16, 16, 2000 + i);
+		//createIconButton("edit.ico", 465, 40 + i * 28, 22, 22, 16, 16, 2500 + i);
 	}
 
 	createButton("Clear All", 30, 320, false, BTN_CLEAR);

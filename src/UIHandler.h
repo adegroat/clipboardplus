@@ -11,13 +11,13 @@ class UIHandler {
 
 private:
 	HWND parentHwnd;
-	int parentWidth, parentHeight;
 	std::string fontName;
 	HWND clipboardEditBox[10];
 	HFONT font;
 
 	static bool CALLBACK setChildrenFontProc(HWND, LPARAM);
 public:
+	int parentWidth, parentHeight, parentX, parentY;
 
 	UIHandler(HWND pHwnd, std::string fontName);
 	HWND createButton(std::string text, int x, int y, int width, int height, int id);
