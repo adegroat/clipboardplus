@@ -19,7 +19,7 @@ bool WindowSetup::registerClass() {
 	wc.hIcon = iconBig;
 	wc.hIconSm = iconSmall;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE); // COLOR_BTNFACE
+	wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE); // COLOR_3DFACE
 	wc.lpszMenuName = NULL;
 
 	return RegisterClassEx(&wc);

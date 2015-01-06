@@ -20,56 +20,59 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	cbHandler = new ClipboardHandler(mainWindow);
 }
 
-bool CALLBACK ClipboardPlus::setChildrenFontProc(HWND hwnd, LPARAM lParam) {
-	SendMessage(hwnd, WM_SETFONT, (WPARAM)lParam, 0);
-	return true;
-}
-
 void ClipboardPlus::start() {
 	if(running) return;
-
 	running = true;
 
 	for(int i = 0; i < 10; i++) {
-		clipboardData[i] = new char[1];
-		memcpy(clipboardData[i], "", 1);
+		clipboardData[i] = "";
 	}
+
+
 
 	WindowSetup ws(hInstance, title, wProc);
 	if(!ws.registerClass()){
-		MessageBox(NULL, "Error registering window!", "Error", MB_OK);
-		return;
-	}
-	mainWindow = ws.createWindow(title, width, height, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX);
-	if(!mainWindow){
-		MessageBox(NULL, "Error creating window!", "Error", MB_OK);
+		UIHandler::messageBox("Error registering window!");
 		return;
 	}
 
-	EnumChildWindows(mainWindow, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
+	mainWindow = ws.createWindow(title, width, height, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX);
+	if(!mainWindow){
+		UIHandler::messageBox("Error creating window!");
+		return;
+	}
 
 	ShowWindow(mainWindow, nCmdShow);
 	UpdateWindow(mainWindow);
 
-	HINSTANCE kbHookLib = LoadLibrary("kbhook.dll");
+
+
+	HINSTANCE kbHookLib = LoadLibrary("clipboardhook.dll");
 	if(kbHookLib == NULL) {
-		MessageBox(mainWindow, "Error loading kbhook.dll", "Error", MB_OK);
+		UIHandler::messageBox("Error loading clipboard hook!");
 		stop();
+		return;
 	}
 
 	HHOOK (*installHook)(HINSTANCE, HOOKPROC) = (HHOOK (*)(HINSTANCE, HOOKPROC))GetProcAddress(kbHookLib, "installHook");
 	if(installHook == NULL) {
-		MessageBox(mainWindow, "Error getting hook address!", "Error", MB_OK);
+		UIHandler::messageBox("Error getting hook address!");
 		stop();
+		return;
 	}
 
 	kbHook = installHook(kbHookLib, kbProc);
 	if(kbHook == NULL) {
-		MessageBox(mainWindow, "Error installing hook!", "Error", MB_OK);
+		UIHandler::messageBox("Error installing hook!");
 		stop();
+		return;
 	}
 
+
+
 	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
+
+
 
 	while(GetMessage(&message, mainWindow, 0, 0) > 0) {
 		TranslateMessage(&message);
@@ -85,13 +88,16 @@ void ClipboardPlus::stop(const char message[128]) {
 }
 
 void ClipboardPlus::cleanUp() {
-	for(int i = 0; i < 10; i++) {
-		delete[] clipboardData[i];
-	}
 	delete cbHandler;
+	delete uiHandler;
 
 	UnhookWindowsHookEx(kbHook);
 	UnregisterHotKey(mainWindow, HOTKEY_SHOWWINDOW);
+}
+
+void ClipboardPlus::setupUI(HWND hwnd) {
+	uiHandler = new UIHandler(hwnd, "");
+	uiHandler->setupUI();
 }
 
 LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -99,61 +105,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 
 	case WM_CREATE:
 	{
-		CreateWindow("STATIC", "Clipboards", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 15, width, 20, hwnd, NULL, NULL, NULL);
-
-		for(int i = 0; i < 10; i++) {
-			char iBuf[2];
-			itoa(i, iBuf, 10);
-			char finalBuf[] = "#";
-			strcat(finalBuf, iBuf);
-			LPCSTR data = const_cast<const char*>(finalBuf);
-
-			CreateWindow("STATIC", data, WS_CHILD | WS_VISIBLE | SS_SIMPLE, 8, i * 28 + 42, 20, 14, hwnd, NULL, NULL, NULL);
-
-			clipboardEditBox[i] = CreateWindow(
-					"EDIT",
-					clipboardData[i],
-					WS_CHILD | WS_VISIBLE | WS_BORDER | ES_READONLY | ES_AUTOHSCROLL,
-					30, 40 + i * 28,
-					430, 20,
-					hwnd,
-					(HMENU)i,
-					NULL,
-					NULL);
-
-			CreateWindow(
-					"BUTTON",
-					"X",
-					WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-					465, 40 + i * 28,
-					20, 20,
-					hwnd,
-					(HMENU)(0x5550 + i),
-					NULL,
-					NULL);
-		}
-
-		CreateWindow(
-				"BUTTON",
-				"Clear All",
-				WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-				30, 320,
-				80, 25,
-				hwnd,
-				(HMENU)BTN_CLEAR,
-				NULL,
-				NULL);
-
-		CreateWindow(
-				"BUTTON",
-				"Hide",
-				WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-				120, 320,
-				80, 25,
-				hwnd,
-				(HMENU)BTN_HIDE,
-				NULL,
-				NULL);
+		setupUI(hwnd);
 	} break;
 
 	case WM_COMMAND:
@@ -162,34 +114,44 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 
 			switch(LOWORD(wParam)) {
 
-			case BTN_CLEAR:
+			case UIHandler::BTN_CLEAR:
 				for(int i = 0; i < 10; i++) {
-					clipboardData[i] = new char[1];
-					memcpy(clipboardData[i], "", 1);
-					SetWindowText(clipboardEditBox[i], "");
+					clipboardData[i] = "";
+					SetWindowText(uiHandler->getCBEditBox(i), "");
 				}
 				break;
 
-			case BTN_HIDE:
+			case UIHandler::BTN_HIDE:
 				ShowWindow(hwnd, SW_HIDE);
-				MessageBox(NULL, "Press Ctrl+F6 to show!", "Abracadabra!", MB_OK | MB_ICONINFORMATION);
+				UIHandler::messageBox("Press Ctrl+F6 to show!", "Abracadabra!");
 				break;
 
-			case BTN_CLEAR0:
-			case BTN_CLEAR1:
-			case BTN_CLEAR2:
-			case BTN_CLEAR3:
-			case BTN_CLEAR4:
-			case BTN_CLEAR5:
-			case BTN_CLEAR6:
-			case BTN_CLEAR7:
-			case BTN_CLEAR8:
-			case BTN_CLEAR9:
+			case UIHandler::BTN_HELP:
 			{
-				int index = LOWORD(wParam) - 0x5550;
-				clipboardData[index] = new char[1];
-				memcpy(clipboardData[index], "", 1);
-				SetWindowText(clipboardEditBox[index], "");
+				int helpResponse = UIHandler::messageBox(
+						"Press Ctrl+C+Number key to copy data to the respective clipboard.\nPress Ctrl+Number Key+V, in that order, to paste data.\n\nFor more detailed instructions, press the \"OK\" button below.",
+						"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
+
+				if(helpResponse == IDOK) {
+					//ShellExecute(NULL, "open", "http://google.com", NULL, NULL, SW_SHOW);
+					ShellExecute(NULL, "open", "readme.txt", NULL, NULL, SW_SHOW);
+				}
+			} break;
+
+			case UIHandler::BTN_CLEAR0:
+			case UIHandler::BTN_CLEAR1:
+			case UIHandler::BTN_CLEAR2:
+			case UIHandler::BTN_CLEAR3:
+			case UIHandler::BTN_CLEAR4:
+			case UIHandler::BTN_CLEAR5:
+			case UIHandler::BTN_CLEAR6:
+			case UIHandler::BTN_CLEAR7:
+			case UIHandler::BTN_CLEAR8:
+			case UIHandler::BTN_CLEAR9:
+			{
+				int index = LOWORD(wParam) - 2000;
+				clipboardData[index] = "";
+				SetWindowText(uiHandler->getCBEditBox(index), "");
 			} break;
 
 			}
@@ -227,19 +189,18 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 			if(keyCode == 0x44) dDown = true;
 			if(keyCode >= 0x30 && keyCode <= 0x39) numKey = keyCode;
 
-			if(ctrlDown && cDown && numKey != -1 && !done) {
+			if(ctrlDown && cDown && numKey != -1 && !done ) {
 				int index = numKey - 0x30;
 
 				std::string cbData = cbHandler->getClipboardText();
+				cbHandler->emptyClipboard();
 
 				if(dDown) {
-					strcat(clipboardData[index], cbData.c_str());
+					clipboardData[index].append(cbData);
 				} else {
-					clipboardData[index] = new char[cbData.length()];
-					memcpy(clipboardData[index], cbData.c_str(), cbData.length() + 1);
+					clipboardData[index] = cbData;
 				}
 
-				cbHandler->emptyClipboard();
 				done = true;
 			}
 
@@ -261,7 +222,7 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 			done = false;
 
 			for(int i = 0; i < 10; i++){
-				SetWindowTextA(clipboardEditBox[i], clipboardData[i]);
+				SetWindowTextA(uiHandler->getCBEditBox(i), clipboardData[i].c_str());
 			}
 		} break;
 
