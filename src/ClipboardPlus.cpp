@@ -248,17 +248,20 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 
 		case WM_KEYUP:
 		{
-			if(keyCode == VK_LCONTROL) ctrlDown = false;
+			if(keyCode == VK_LCONTROL){
+				donePaste = false;
+				ctrlDown = false;
+			}
 			if(keyCode == 0x43) cDown = false;
 			if(keyCode == 0x56) vDown = false;
 			if(keyCode == 0x44) dDown = false;
 
-			if(keyCode >= 0x30 && keyCode <= 0x39){
-				donePaste = false;
-				numKey = -1;
-			}
+//			if(keyCode >= 0x30 && keyCode <= 0x39){
+//				donePaste = false;
+//				numKey = -1;
+//			}
 
-			///numKey = -1;
+			numKey = -1;
 			doneCopy = false;
 
 			for(int i = 0; i < 10; i++){
