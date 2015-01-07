@@ -1,3 +1,7 @@
+// Almost 99.99% accuracy and input detection for copy/paste actions
+// No corruption or overridden data
+// Easy to use
+
 #include <iostream>
 
 #include "ClipboardPlus.h"
