@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <iostream>
+#include <ctime>
 
 #include "WindowSetup.h"
 #include "ClipboardHandler.h"
@@ -20,6 +21,7 @@ private:
 	HWND mainWindow;
 	int nCmdShow;
 	MSG message;
+	HHOOK kbHook;
 	std::string clipboardData[10];
 	ClipboardHandler* cbHandler;
 	UIHandler* uiHandler;
@@ -31,13 +33,13 @@ public:
 	LRESULT CALLBACK kbHookProc(int, WPARAM, LPARAM);
 	WNDPROC wProc;
 	HOOKPROC kbProc;
-	HHOOK kbHook;
-	bool ctrlDown, cDown, vDown, dDown;
+	bool ctrlDown, cDown, vDown;
 	int numKey;
 	void start();
 	void stop(const char message[128] = "NONE");
 	void cleanUp();
 	void setupUI(HWND hwnd);
+	float timeMs() { return ((float)clock() / CLOCKS_PER_SEC) * 1000; }
 };
 
 #endif /* CLIPBOARDPLUS_H_ */

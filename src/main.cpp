@@ -2,6 +2,8 @@
 // No corruption or overridden data
 // Easy to use
 
+// -mwindows linker flag
+
 #include <iostream>
 
 #include "ClipboardPlus.h"

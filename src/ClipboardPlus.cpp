@@ -15,7 +15,6 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	this->ctrlDown = false;
 	this->cDown = false;
 	this->vDown = false;
-	this->dDown = false;
 	this->numKey = -1;
 	cbHandler = new ClipboardHandler(mainWindow);
 }
@@ -198,23 +197,21 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 	switch(wParam) {
 		case WM_KEYDOWN:
 		{
-			if(keyCode == VK_LCONTROL) ctrlDown = true;
+			std::cout << (char)keyCode << "\t" << keyCode << std::endl;
+
+			if(keyCode == VK_LCONTROL || keyCode == VK_RCONTROL) ctrlDown = true;
 			if(keyCode == 0x43) cDown = true;
 			if(keyCode == 0x56) vDown = true;
-			if(keyCode == 0x44) dDown = true;
 			if(keyCode >= 0x30 && keyCode <= 0x39) numKey = keyCode;
 
 			if(ctrlDown && cDown && numKey != -1 && !doneCopy) {
 				int index = numKey - 0x30;
+				std::cout << "Ctrl+C+" << (char)numKey << "\tkey code: " << numKey << "\tindex: " << index << std::endl;
 
 				std::string cbData = cbHandler->getClipboardText();
 				cbHandler->emptyClipboard();
 
-				if(dDown) {
-					clipboardData[index].append(cbData);
-				} else {
-					clipboardData[index] = cbData;
-				}
+				clipboardData[index] = cbData;
 
 				doneCopy = true;
 			}
@@ -224,8 +221,10 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 
 				if(numKey != -1){
 					int index = numKey - 0x30;
+					std::cout << "Ctrl+V+" << (char)numKey << "\tkey code: " << numKey << "\tindex: " << index << std::endl;
 
 					cbHandler->setClipboardText(clipboardData[index]);
+					std::cout << "Current CB data: " << cbHandler->getClipboardText() << std::endl;
 
 					if(!donePaste){
 						donePaste = true;
@@ -248,18 +247,13 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 
 		case WM_KEYUP:
 		{
-			if(keyCode == VK_LCONTROL){
-				donePaste = false;
-				ctrlDown = false;
-			}
+			if(keyCode == VK_LCONTROL || keyCode == VK_RCONTROL) ctrlDown = false;
 			if(keyCode == 0x43) cDown = false;
 			if(keyCode == 0x56) vDown = false;
-			if(keyCode == 0x44) dDown = false;
 
-//			if(keyCode >= 0x30 && keyCode <= 0x39){
-//				donePaste = false;
-//				numKey = -1;
-//			}
+			if(keyCode >= 0x30 && keyCode <= 0x39){
+				donePaste = false;
+			}
 
 			numKey = -1;
 			doneCopy = false;
