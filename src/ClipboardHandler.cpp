@@ -28,8 +28,12 @@ bool ClipboardHandler::emptyClipboard() {
 }
 
 std::string ClipboardHandler::getClipboardText() {
+	if(!IsClipboardFormatAvailable(CF_TEXT)) {
+		notify("getClipboardData(), Clipboard Empty!");
+		return "";
+	}
 	openClipboard();
-	std::string tempStr;
+	std::string tempStr = "";
 
 	HGLOBAL hGlobal = GetClipboardData(CF_TEXT);
 	if(hGlobal != NULL) {
@@ -37,14 +41,15 @@ std::string ClipboardHandler::getClipboardText() {
 
 		if(temp != NULL) {
 			tempStr = temp;
+			GlobalUnlock(hGlobal);
 		} else {
 			notify("getClipboardText(), temp NULL");
 		}
 	} else {
-		notify("getClipboardText(), hGlobal");
+		notify("getClipboardText(), hGlobal NULL");
 	}
 
-	closeClipboard();
+	CloseClipboard();
 	return tempStr;
 }
 
