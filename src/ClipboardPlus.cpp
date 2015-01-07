@@ -131,7 +131,6 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 						"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
 
 				if(helpResponse == IDOK) {
-					//ShellExecute(NULL, "open", "http://google.com", NULL, NULL, SW_SHOW);
 					ShellExecute(NULL, "open", "readme.txt", NULL, NULL, SW_SHOW);
 				}
 			} break;
@@ -190,8 +189,11 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 }
 
 LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+	if(nCode < 0) return CallNextHookEx(NULL, nCode, wParam, lParam);
+
 	int keyCode = ((KBDLLHOOKSTRUCT*)lParam)->vkCode;
-	static bool done = false;
+	static bool doneCopy = false;
+	static bool donePaste = false;
 
 	switch(wParam) {
 		case WM_KEYDOWN:
@@ -202,7 +204,7 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 			if(keyCode == 0x44) dDown = true;
 			if(keyCode >= 0x30 && keyCode <= 0x39) numKey = keyCode;
 
-			if(ctrlDown && cDown && numKey != -1 && !done ) {
+			if(ctrlDown && cDown && numKey != -1 && !doneCopy) {
 				int index = numKey - 0x30;
 
 				std::string cbData = cbHandler->getClipboardText();
@@ -214,13 +216,32 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 					clipboardData[index] = cbData;
 				}
 
-				done = true;
+				doneCopy = true;
 			}
 
-			if(ctrlDown && numKey != -1 && !cDown) {
-				int index = numKey - 0x30;
+			if(ctrlDown && vDown) {
+				cbHandler->emptyClipboard();
 
-				cbHandler->setClipboardText(clipboardData[index]);
+				if(numKey != -1){
+					int index = numKey - 0x30;
+
+					cbHandler->setClipboardText(clipboardData[index]);
+
+					if(!donePaste){
+						donePaste = true;
+						INPUT input[2];
+						for(int i = 0; i < 2; i++) {
+							input[i].type = INPUT_KEYBOARD;
+							input[i].ki.dwFlags = 0;
+							input[i].ki.time = 0;
+							input[i].ki.wScan = 0;
+						}
+						input[0].ki.wVk = 0x56;
+						input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+						input[1].ki.wVk = 0x56;
+						SendInput(2, input, sizeof(INPUT));
+					}
+				}
 			}
 
 		} break;
@@ -231,8 +252,14 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 			if(keyCode == 0x43) cDown = false;
 			if(keyCode == 0x56) vDown = false;
 			if(keyCode == 0x44) dDown = false;
-			numKey = -1;
-			done = false;
+
+			if(keyCode >= 0x30 && keyCode <= 0x39){
+				donePaste = false;
+				numKey = -1;
+			}
+
+			///numKey = -1;
+			doneCopy = false;
 
 			for(int i = 0; i < 10; i++){
 				SetWindowTextA(uiHandler->getCBEditBox(i), clipboardData[i].c_str());
@@ -242,3 +269,4 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 	}
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
+
