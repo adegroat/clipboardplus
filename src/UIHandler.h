@@ -22,6 +22,7 @@ public:
 	UIHandler(HWND pHwnd, std::string fontName);
 	HWND createButton(std::string text, int x, int y, int width, int height, int id);
 	HWND createButton(std::string text, int x, int y, bool autoSize, int id);
+	HWND createCheckbox(std::string text, int x, int y, bool autoSize, int id);
 	HWND createIconButton(std::string iconFileName, int x, int y, int width, int height, int iconWidth, int iconHeight, int id);
 	HWND createLabel(std::string text, int x, int y, bool center);
 	HWND createEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id);
@@ -35,6 +36,7 @@ public:
 	static const int BTN_CLEAR = 1000;
 	static const int BTN_HIDE = 1001;
 	static const int BTN_HELP = 1002;
+	static const int BTN_STD_PASTE = 1003;
 
 	static const int BTN_CLEAR0 = 2000;
 	static const int BTN_CLEAR1 = 2001;

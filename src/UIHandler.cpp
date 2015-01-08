@@ -34,6 +34,19 @@ HWND UIHandler::createButton(std::string text, int x, int y, int width, int heig
 			NULL);
 }
 
+HWND UIHandler::createCheckbox(std::string text, int x, int y, bool autoSize, int id) {
+	return CreateWindow(
+			"BUTTON",
+			text.c_str(),
+			WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | BS_CHECKBOX | BS_CENTER | BS_VCENTER,
+			x, y,
+			autoSize ? 20 + 8 * text.length() : DEFAULT_BTN_WIDTH, DEFAULT_BTN_HEIGHT,
+			parentHwnd,
+			(HMENU)id,
+			NULL,
+			NULL);
+}
+
 HWND UIHandler::createIconButton(std::string iconFileName, int x, int y, int width, int height, int iconWidth, int iconHeight, int id) {
 	HICON icon = (HICON)LoadImage(NULL, iconFileName.c_str(), IMAGE_ICON, iconWidth, iconHeight, LR_LOADFROMFILE);
 	if(icon == NULL) {
@@ -42,7 +55,7 @@ HWND UIHandler::createIconButton(std::string iconFileName, int x, int y, int wid
 	}
 	HWND button = CreateWindow(
 			"BUTTON",
-			"",
+			"Test",
 			WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | BS_CENTER | BS_VCENTER | BS_ICON,
 			x, y,
 			width, height,
@@ -113,9 +126,8 @@ void UIHandler::setupUI() {
 
 	createButton("Clear All", 30, 320, false, BTN_CLEAR);
 	createButton("Hide", 120, 320, false, BTN_HIDE);
-
-//	createButton("Help", 380, 320, false, BTN_HELP);
-	createIconButton("help.ico", 210, 320, 25, 25, 16, 16, BTN_HELP);
+	createIconButton("help.ico", 432, 320, 25, 25, 16, 16, BTN_HELP);
+	createCheckbox("Standard paste", 30, 350, true, BTN_STD_PASTE);
 
 	EnumChildWindows(parentHwnd, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
 }
