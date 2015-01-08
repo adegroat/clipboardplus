@@ -14,11 +14,21 @@ LRESULT CALLBACK keyboardHookProc(int, WPARAM, LPARAM);
 ClipboardPlus gClipboardPlus;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+
+	HANDLE mutex = CreateMutex(NULL, true, "clipboardplus");
+
+	if(GetLastError() == ERROR_ALREADY_EXISTS) {
+		UIHandler::messageBox("Clipboard+ is already running.\n\nIf the window is hidden, press Ctrl+F6 to show it.", "Clipboard+ already running");
+		return 0;
+	}
+
 	MSG message;
 
 	ClipboardPlus cbp(hInstance, windProc, keyboardHookProc, message, lpCmdLine, nCmdShow);
 	gClipboardPlus = cbp;
 	gClipboardPlus.start();
+
+	ReleaseMutex(mutex);
 
 	return message.wParam;
 }
