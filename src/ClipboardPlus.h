@@ -25,16 +25,16 @@ private:
 	std::string clipboardData[10];
 	ClipboardHandler* cbHandler;
 	UIHandler* uiHandler;
+	WNDPROC wProc;
+	HOOKPROC kbProc;
+	bool ctrlDown, cDown, vDown, standardPaste;
+	int numKey;
 
 public:
 	ClipboardPlus(HINSTANCE, WNDPROC, HOOKPROC, MSG, LPSTR, int);
 	ClipboardPlus() {  }
 	LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
 	LRESULT CALLBACK kbHookProc(int, WPARAM, LPARAM);
-	WNDPROC wProc;
-	HOOKPROC kbProc;
-	bool ctrlDown, cDown, vDown;
-	int numKey;
 	void start();
 	void stop(const char message[128] = "NONE");
 	void cleanUp();

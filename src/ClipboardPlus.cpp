@@ -111,60 +111,44 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 
 			switch(LOWORD(wParam)) {
 
-			case UIHandler::BTN_CLEAR:
-				for(int i = 0; i < 10; i++) {
-					clipboardData[i] = "";
-					SetWindowText(uiHandler->getCBEditBox(i), "");
-				}
-				break;
+				case UIHandler::BTN_CLEAR:
+					for(int i = 0; i < 10; i++) {
+						clipboardData[i] = "";
+						SetWindowText(uiHandler->getCBEditBox(i), "");
+					}
+					break;
 
-			case UIHandler::BTN_HIDE:
-				ShowWindow(hwnd, SW_HIDE);
-				UIHandler::messageBox("Press Ctrl+F6 to show!", "Abracadabra!");
-				break;
+				case UIHandler::BTN_HIDE:
+					ShowWindow(hwnd, SW_HIDE);
+					UIHandler::messageBox("Press Ctrl+F6 to show!", "Abracadabra!");
+					break;
 
-			case UIHandler::BTN_HELP:
-			{
-				int helpResponse = UIHandler::messageBox(
-						"Press Ctrl+C+Number key to copy data to the respective clipboard.\nPress Ctrl+Number Key+V, in that order, to paste data.\n\nFor more detailed instructions, press the \"OK\" button below.",
-						"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
+				case UIHandler::BTN_HELP:
+				{
+					int helpResponse = UIHandler::messageBox(
+							"Press Ctrl+C+Number key to copy data to the respective clipboard.\nPress Ctrl+Number Key+V, in that order, to paste data.\n\nFor more detailed instructions, press the \"OK\" button below.",
+							"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
 
-				if(helpResponse == IDOK) {
-					ShellExecute(NULL, "open", "readme.txt", NULL, NULL, SW_SHOW);
-				}
-			} break;
+					if(helpResponse == IDOK) {
+						ShellExecute(NULL, "open", "readme.txt", NULL, NULL, SW_SHOW);
+					}
+				} break;
 
-			case UIHandler::BTN_CLEAR0:
-			case UIHandler::BTN_CLEAR1:
-			case UIHandler::BTN_CLEAR2:
-			case UIHandler::BTN_CLEAR3:
-			case UIHandler::BTN_CLEAR4:
-			case UIHandler::BTN_CLEAR5:
-			case UIHandler::BTN_CLEAR6:
-			case UIHandler::BTN_CLEAR7:
-			case UIHandler::BTN_CLEAR8:
-			case UIHandler::BTN_CLEAR9:
-			{
-				int index = LOWORD(wParam) - 2000;
-				clipboardData[index] = "";
-				SetWindowText(uiHandler->getCBEditBox(index), "");
-			} break;
-
-			case UIHandler::BTN_EDIT0:
-			case UIHandler::BTN_EDIT1:
-			case UIHandler::BTN_EDIT2:
-			case UIHandler::BTN_EDIT3:
-			case UIHandler::BTN_EDIT4:
-			case UIHandler::BTN_EDIT5:
-			case UIHandler::BTN_EDIT6:
-			case UIHandler::BTN_EDIT7:
-			case UIHandler::BTN_EDIT8:
-			case UIHandler::BTN_EDIT9:
-			{
-				// Show Edit box
-
-			} break;
-
+				case UIHandler::BTN_CLEAR0:
+				case UIHandler::BTN_CLEAR1:
+				case UIHandler::BTN_CLEAR2:
+				case UIHandler::BTN_CLEAR3:
+				case UIHandler::BTN_CLEAR4:
+				case UIHandler::BTN_CLEAR5:
+				case UIHandler::BTN_CLEAR6:
+				case UIHandler::BTN_CLEAR7:
+				case UIHandler::BTN_CLEAR8:
+				case UIHandler::BTN_CLEAR9:
+				{
+					int index = LOWORD(wParam) - 2000;
+					clipboardData[index] = "";
+					SetWindowText(uiHandler->getCBEditBox(index), "");
+				} break;
 			}
 		}
 
@@ -243,7 +227,8 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 				}
 			}
 
-		} break;
+
+		} break; // WM_KEYDOWN
 
 		case WM_KEYUP:
 		{
