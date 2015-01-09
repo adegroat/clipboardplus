@@ -63,6 +63,7 @@ void ClipboardPlus::start() {
 		return;
 	}
 
+
 	RegisterHotKey(mainWindow, HOTKEY_SHOWWINDOW, MOD_CONTROL, VK_F6);
 	for(int i = 0; i < 10; i++) {
 		RegisterHotKey(mainWindow, HOTKEY_CTRLNUM + i, MOD_CONTROL, 0x30 + i);
@@ -101,9 +102,8 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	switch(message) {
 
 	case WM_CREATE:
-	{
 		setupUI(hwnd);
-	} break;
+		break;
 
 	case WM_COMMAND:
 	{
@@ -126,7 +126,7 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 				case UIHandler::BTN_HELP:
 				{
 					int helpResponse = UIHandler::messageBox(
-							"Press Ctrl+C+Number key to copy data to the respective clipboard.\nPress Ctrl+Number Key+V, in that order, to paste data.\n\nFor more detailed instructions, press the \"OK\" button below.",
+							"Press Ctrl+C+Number key to copy data to the respective clipboard.\nPress Ctrl+V+Number Key to paste data.\n\nFor more detailed instructions, press the \"OK\" button below.",
 							"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
 
 					if(helpResponse == IDOK) {

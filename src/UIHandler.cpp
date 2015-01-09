@@ -126,7 +126,7 @@ void UIHandler::setupUI() {
 
 	createButton("Clear All", 30, 320, false, BTN_CLEAR);
 	createButton("Hide", 120, 320, false, BTN_HIDE);
-	createIconButton("help.ico", 435, 320, 25, 25, 16, 16, BTN_HELP);
+	createIconButton("help.ico", 434, 320, 25, 25, 16, 16, BTN_HELP);
 //	createCheckbox("Standard paste", 30, 350, true, BTN_STD_PASTE);
 
 	EnumChildWindows(parentHwnd, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
