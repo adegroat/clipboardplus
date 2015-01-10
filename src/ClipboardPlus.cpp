@@ -11,7 +11,7 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	running = false;
 	title = std::string("Clipboard+ (").append(VERSION).append(")");
 	width = 500;
-	height = 400;
+	height = 410;
 	mainWindow = NULL;
 	kbHook = NULL;
 	this->ctrlDown = false;
@@ -19,6 +19,7 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	this->vDown = false;
 	this->numKey = -1;
 	cbHandler = new ClipboardHandler(mainWindow);
+	standardPaste = false;
 }
 
 void ClipboardPlus::start() {
@@ -127,7 +128,10 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 				case UIHandler::BTN_HELP:
 				{
 					int helpResponse = UIHandler::messageBox(
-							"Press Ctrl+C+Number key to copy data to the respective clipboard.\nPress Ctrl+V+Number Key to paste data.\n\nFor more detailed instructions, press the \"OK\" button below.",
+							"Press Ctrl+C+NUMBER_KEY to copy data to the respective clipboard.\n"
+							"Press Ctrl+V+NUMBER_KEY to paste data.\n"
+							"If you have standard paste enabled, press Ctrl+NUMBER_KEY+V, in that order, to paste."
+							"\n\nFor more detailed instructions, press the \"OK\" button below.",
 							"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
 
 					if(helpResponse == IDOK) {
@@ -150,10 +154,19 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					clipboardData[index] = "";
 					SetWindowText(uiHandler->getCBEditBox(index), "");
 				} break;
+
+				case UIHandler::BTN_STD_PASTE:
+					standardPaste = !standardPaste;
+					cbHandler->emptyClipboard();
+					break;
 			}
 		}
 
 	} break;
+
+	case WM_QUERYENDSESSION:
+
+		break;
 
 	case WM_HOTKEY:
 		if(wParam == HOTKEY_SHOWWINDOW) {
@@ -182,8 +195,6 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 	switch(wParam) {
 		case WM_KEYDOWN:
 		{
-			std::cout << (char)keyCode << "\t" << keyCode << std::endl;
-
 			if(keyCode == VK_LCONTROL || keyCode == VK_RCONTROL) ctrlDown = true;
 			if(keyCode == 0x43) cDown = true;
 			if(keyCode == 0x56) vDown = true;
@@ -191,7 +202,6 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 
 			if(ctrlDown && cDown && numKey != -1 && !doneCopy) {
 				int index = numKey - 0x30;
-				std::cout << "Ctrl+C+" << (char)numKey << "\tkey code: " << numKey << "\tindex: " << index << std::endl;
 
 				std::string cbData = cbHandler->getClipboardText();
 				cbHandler->emptyClipboard();
@@ -201,33 +211,39 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 				doneCopy = true;
 			}
 
-			if(ctrlDown && vDown) {
-				cbHandler->emptyClipboard();
-
-				if(numKey != -1){
+			if(standardPaste) {
+				if(ctrlDown && numKey != -1 && !cDown) {
 					int index = numKey - 0x30;
-					std::cout << "Ctrl+V+" << (char)numKey << "\tkey code: " << numKey << "\tindex: " << index << std::endl;
-
 					cbHandler->setClipboardText(clipboardData[index]);
-					std::cout << "Current CB data: " << cbHandler->getClipboardText() << std::endl;
-
-					if(!donePaste){
-						donePaste = true;
-						INPUT input[2];
-						for(int i = 0; i < 2; i++) {
-							input[i].type = INPUT_KEYBOARD;
-							input[i].ki.dwFlags = 0;
-							input[i].ki.time = 0;
-							input[i].ki.wScan = 0;
-						}
-						input[0].ki.wVk = 0x56;
-						input[1].ki.dwFlags = KEYEVENTF_KEYUP;
-						input[1].ki.wVk = 0x56;
-						SendInput(2, input, sizeof(INPUT));
-					}
 				}
 			}
+			else {
+				if(ctrlDown && vDown) {
+					cbHandler->emptyClipboard();
 
+					if(numKey != -1){
+						int index = numKey - 0x30;
+
+						cbHandler->setClipboardText(clipboardData[index]);
+
+						if(!donePaste){
+							donePaste = true;
+							INPUT input[2];
+							for(int i = 0; i < 2; i++) {
+								input[i].type = INPUT_KEYBOARD;
+								input[i].ki.dwFlags = 0;
+								input[i].ki.time = 0;
+								input[i].ki.wScan = 0;
+							}
+							input[0].ki.wVk = 0x56;
+							input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+							input[1].ki.wVk = 0x56;
+							SendInput(2, input, sizeof(INPUT));
+						}
+					}
+
+				}
+			}
 
 		} break; // WM_KEYDOWN
 

@@ -31,6 +31,11 @@ private:
 	bool ctrlDown, cDown, vDown, standardPaste;
 	int numKey;
 
+	void stop(const char message[128] = "NONE");
+	void cleanUp();
+	void setupUI(HWND hwnd);
+	float timeMs() { return ((float)clock() / CLOCKS_PER_SEC) * 1000; }
+
 public:
 	static const std::string VERSION;
 
@@ -39,13 +44,6 @@ public:
 	LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
 	LRESULT CALLBACK kbHookProc(int, WPARAM, LPARAM);
 	void start();
-	void stop(const char message[128] = "NONE");
-	void cleanUp();
-	void setupUI(HWND hwnd);
-	float timeMs() { return ((float)clock() / CLOCKS_PER_SEC) * 1000; }
-	void setCBPlusText(int index, std::string newText) { clipboardData[index] = newText; }
-	std::string getCBPlusText(int index) { return clipboardData[index]; }
-
 };
 
 #endif /* CLIPBOARDPLUS_H_ */

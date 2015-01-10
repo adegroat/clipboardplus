@@ -113,11 +113,12 @@ HWND UIHandler::createMultiLineEditBox(std::string defaultText, int x, int y, in
 }
 
 void UIHandler::setupUI() {
-	createLabel("Clipboards", 0, 15, true);
+	createLabel("Clipboards", 0, 13, true);
 
 	for(int i = 0; i < 10; i++) {
 		char label[3] = {'#', (char)(i + 0x30), '\0'};
-		int yPos = i == 0 ? 42 + 9 * 28 : 42 + (i - 1) * 28;
+		int yOffset = 40;
+		int yPos = i == 0 ? yOffset + 9 * 28 : yOffset + (i - 1) * 28;
 		createLabel(label, 8, yPos, false);
 		clipboardEditBox[i] = createEditBox("", 30, yPos, 430, 20, true, 3000 + i);
 
@@ -127,7 +128,7 @@ void UIHandler::setupUI() {
 	createButton("Clear All", 30, 325, false, BTN_CLEAR);
 	createButton("Hide", 120, 325, false, BTN_HIDE);
 	createIconButton("help.ico", 434, 325, 25, 25, 16, 16, BTN_HELP);
-//	createCheckbox("Standard paste", 30, 350, true, BTN_STD_PASTE);
+	createCheckbox("Standard paste", 30, 350, true, BTN_STD_PASTE);
 
 	EnumChildWindows(parentHwnd, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
 }
