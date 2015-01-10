@@ -1,5 +1,7 @@
 #include "ClipboardPlus.h"
 
+const std::string ClipboardPlus::VERSION = "1.0";
+
 ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookProc, MSG message, LPSTR lpCmdLine, int nCmdShow) {
 	this->hInstance = hInstance;
 	this->wProc = wp;
@@ -7,7 +9,7 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	this->message = message;
 	this->nCmdShow = nCmdShow;
 	running = false;
-	title = "Clipboard+";
+	title = std::string("Clipboard+ (").append(VERSION).append(")");
 	width = 500;
 	height = 400;
 	mainWindow = NULL;
@@ -27,13 +29,13 @@ void ClipboardPlus::start() {
 		clipboardData[i] = "";
 	}
 
-	WindowSetup ws(hInstance, title, wProc);
+	WindowSetup ws(hInstance, title.c_str(), wProc);
 	if(!ws.registerClass()){
 		UIHandler::messageBox("Error registering window!");
 		return;
 	}
 
-	mainWindow = ws.createWindow(title, width, height, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX);
+	mainWindow = ws.createWindow(title.c_str(), width, height, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX);
 	if(!mainWindow){
 		UIHandler::messageBox("Error creating window!");
 		return;
@@ -108,7 +110,6 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	case WM_COMMAND:
 	{
 		if(HIWORD(wParam) == BN_CLICKED) {
-
 			switch(LOWORD(wParam)) {
 
 				case UIHandler::BTN_CLEAR:

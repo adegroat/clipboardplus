@@ -3,8 +3,6 @@
 
 #include <windows.h>
 
-#include "UIHandler.h"
-
 class WindowSetup {
 
 private:

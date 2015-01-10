@@ -7,6 +7,7 @@
 
 #include "WindowSetup.h"
 #include "ClipboardHandler.h"
+#include "UIHandler.h"
 
 #define HOTKEY_SHOWWINDOW 8880
 #define HOTKEY_CTRLNUM 9990
@@ -16,7 +17,7 @@ class ClipboardPlus {
 private:
 	HINSTANCE hInstance;
 	bool running;
-	LPCSTR title;
+	std::string title;
 	int width, height;
 	HWND mainWindow;
 	int nCmdShow;
@@ -31,6 +32,8 @@ private:
 	int numKey;
 
 public:
+	static const std::string VERSION;
+
 	ClipboardPlus(HINSTANCE, WNDPROC, HOOKPROC, MSG, LPSTR, int);
 	ClipboardPlus() {  }
 	LRESULT CALLBACK windProc(HWND, UINT, WPARAM, LPARAM);
@@ -40,6 +43,9 @@ public:
 	void cleanUp();
 	void setupUI(HWND hwnd);
 	float timeMs() { return ((float)clock() / CLOCKS_PER_SEC) * 1000; }
+	void setCBPlusText(int index, std::string newText) { clipboardData[index] = newText; }
+	std::string getCBPlusText(int index) { return clipboardData[index]; }
+
 };
 
 #endif /* CLIPBOARDPLUS_H_ */

@@ -117,16 +117,16 @@ void UIHandler::setupUI() {
 
 	for(int i = 0; i < 10; i++) {
 		char label[3] = {'#', (char)(i + 0x30), '\0'};
-		createLabel(label, 8, 42 + i * 28, false);
-		clipboardEditBox[i] = createEditBox("", 30, 40 + i * 28, 430, 20, true, 3000 + i);
+		int yPos = i == 0 ? 42 + 9 * 28 : 42 + (i - 1) * 28;
+		createLabel(label, 8, yPos, false);
+		clipboardEditBox[i] = createEditBox("", 30, yPos, 430, 20, true, 3000 + i);
 
-		createIconButton("delete.ico", 465, 40 + i * 28, 22, 22, 16, 16, 2000 + i);
-		//createIconButton("edit.ico", 465, 40 + i * 28, 22, 22, 16, 16, 2500 + i);
+		createIconButton("delete.ico", 465, yPos, 22, 22, 16, 16, 2000 + i);
 	}
 
-	createButton("Clear All", 30, 320, false, BTN_CLEAR);
-	createButton("Hide", 120, 320, false, BTN_HIDE);
-	createIconButton("help.ico", 434, 320, 25, 25, 16, 16, BTN_HELP);
+	createButton("Clear All", 30, 325, false, BTN_CLEAR);
+	createButton("Hide", 120, 325, false, BTN_HIDE);
+	createIconButton("help.ico", 434, 325, 25, 25, 16, 16, BTN_HELP);
 //	createCheckbox("Standard paste", 30, 350, true, BTN_STD_PASTE);
 
 	EnumChildWindows(parentHwnd, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
