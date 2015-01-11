@@ -238,7 +238,8 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 			}
 			else {
 				if(ctrlDown && vDown) {
-					cbHandler->emptyClipboard();
+					if(IsClipboardFormatAvailable(CF_TEXT))
+						cbHandler->emptyClipboard();
 
 					if(numKey != -1){
 						int index = numKey - 0x30;
