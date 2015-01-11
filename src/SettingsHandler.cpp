@@ -96,7 +96,7 @@ void SettingsHandler::clearAllClipboards() {
 
 void SettingsHandler::setKey(std::string key, std::string value) {
 	std::vector<std::string> lines = readLines(SETTINGS_FILE);
-	std::ofstream settingsFile(SETTINGS_FILE.c_str(), std::ios::app);
+	std::ofstream settingsFile(SETTINGS_FILE.c_str(), std::ios::trunc);
 
 	if(settingsFile.is_open()) {
 		for(unsigned int i = 0; i < lines.size(); i++) {
