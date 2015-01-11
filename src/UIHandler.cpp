@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+HICON UIHandler::CBP_ICON = (HICON)LoadImage(NULL, "icon.ico", IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
+
 UIHandler::UIHandler(HWND pHwnd, std::string fontName) : parentHwnd(pHwnd), fontName(fontName) {
 	LPRECT parentRect = new RECT;
 	GetWindowRect(parentHwnd, parentRect);
@@ -112,6 +114,22 @@ HWND UIHandler::createMultiLineEditBox(std::string defaultText, int x, int y, in
 			NULL);
 }
 
+void UIHandler::showBaloonTip(std::string title, std::string info) {
+	NOTIFYICONDATA nid;
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.uVersion = 4;
+	nid.uID = CBP_TRAY_ICON;
+	nid.hWnd = parentHwnd;
+	nid.hIcon = CBP_ICON;
+	nid.uFlags = NIF_INFO | NIF_ICON;
+	nid.dwInfoFlags = NIIF_USER | NIIF_NOSOUND;
+	memcpy(nid.szInfoTitle, title.c_str(), title.length() + 1);
+	memcpy(nid.szInfo, info.c_str(), info.length() + 1);
+
+	Shell_NotifyIcon(NIM_MODIFY, &nid);
+
+}
+
 void UIHandler::setupUI() {
 	createLabel("Clipboards", 0, 13, true);
 
@@ -126,12 +144,14 @@ void UIHandler::setupUI() {
 	}
 
 	createButton("Clear All", 30, 325, false, BTN_CLEAR);
-	createButton("Hide", 120, 325, false, BTN_HIDE);
+	//createButton("Hide", 120, 325, false, BTN_HIDE);
 	createIconButton("help.ico", 434, 325, 25, 25, 16, 16, BTN_HELP);
 
 	HWND stdPasteCB = createCheckbox("Standard paste", 30, 350, true, BTN_STD_PASTE);
-	bool shouldCheck = SettingsHandler::getKey("standardPaste") == "0" ? 0 : 1;
-	SendMessage(stdPasteCB, BM_SETCHECK, (WPARAM)shouldCheck, 0);
+	SendMessage(stdPasteCB, BM_SETCHECK, (WPARAM)Settings::standardPaste, 0);
+
+	HWND balloonTipsCB = createCheckbox("Balloon Tips", 180, 350, true, BTN_BALLOON_TIPS);
+	SendMessage(balloonTipsCB, BM_SETCHECK, (WPARAM)Settings::showBalloonTips, 0);
 
 	EnumChildWindows(parentHwnd, (WNDENUMPROC)setChildrenFontProc, (LPARAM)font);
 }

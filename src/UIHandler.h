@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <string>
 
-#include "SettingsHandler.h"
+#include "Settings.h"
 
 #define DEFAULT_BTN_WIDTH 80
 #define DEFAULT_BTN_HEIGHT 25
@@ -30,15 +30,23 @@ public:
 	HWND createEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id);
 	HWND createMultiLineEditBox(std::string defaultText, int x, int y, int width, int height, bool readOnly, int id);
 
+	void showBaloonTip(std::string title, std::string info);
+
 	HWND getCBEditBox(int index) { return clipboardEditBox[index]; }
 	void setupUI();
 
+	static HICON CBP_ICON;
+
 	static int messageBox(std::string message, std::string title = "Clipboard+", HWND parentHwnd = NULL, int style = MB_OK | MB_ICONINFORMATION);
+
+	static const int CBP_ICON_MESSAGE = 9032;
+	static const int CBP_TRAY_ICON = 9321;
 
 	static const int BTN_CLEAR = 1000;
 	static const int BTN_HIDE = 1001;
 	static const int BTN_HELP = 1002;
 	static const int BTN_STD_PASTE = 1003;
+	static const int BTN_BALLOON_TIPS = 1004;
 
 	static const int BTN_CLEAR0 = 2000;
 	static const int BTN_CLEAR1 = 2001;

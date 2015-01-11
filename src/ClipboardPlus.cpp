@@ -8,7 +8,6 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	this->kbProc = kbHookProc;
 	this->message = message;
 	this->nCmdShow = nCmdShow;
-	running = false;
 	title = std::string("Clipboard+ (").append(VERSION).append(")");
 	width = 500;
 	height = 410;
@@ -19,12 +18,10 @@ ClipboardPlus::ClipboardPlus(HINSTANCE hInstance, WNDPROC wp, HOOKPROC kbHookPro
 	this->vDown = false;
 	this->numKey = -1;
 	cbHandler = new ClipboardHandler(mainWindow);
-	standardPaste = false;
 }
 
 void ClipboardPlus::start() {
-	if(running) return;
-	running = true;
+	Settings::initSettings();
 
 	WindowSetup ws(hInstance, title.c_str(), wProc);
 	if(!ws.registerClass()){
@@ -75,13 +72,15 @@ void ClipboardPlus::start() {
 }
 
 void ClipboardPlus::stop(const char message[128]) {
-	if(!running) return;
-	running = false;
 	std::cout << "Message: " << message << "\nError: " << GetLastError() << std::endl;
 	PostQuitMessage(0);
 }
 
 void ClipboardPlus::cleanUp() {
+	NOTIFYICONDATA nid;
+	nid.uID = UIHandler::CBP_TRAY_ICON;
+	Shell_NotifyIcon(NIM_DELETE, &nid);
+
 	savePersistentData();
 
 	delete cbHandler;
@@ -95,7 +94,8 @@ void ClipboardPlus::cleanUp() {
 }
 
 void ClipboardPlus::savePersistentData() {
-	SettingsHandler::setKey("standardPaste", standardPaste ? "1" : "0");
+	SettingsHandler::setKey("standardPaste", Settings::standardPaste ? "1" : "0");
+	SettingsHandler::setKey("showBalloonTips", Settings::showBalloonTips ? "1" : "0");
 	for(int i = 0; i < 10; i++) {
 		SettingsHandler::setClipboard(i, clipboardData[i]);
 	}
@@ -104,101 +104,129 @@ void ClipboardPlus::savePersistentData() {
 void ClipboardPlus::setupUI(HWND hwnd) {
 	uiHandler = new UIHandler(hwnd, "");
 	uiHandler->setupUI();
+
+	NOTIFYICONDATA nid;
+	nid.cbSize = sizeof(NOTIFYICONDATA);
+	nid.uVersion = 4;
+	nid.uID = UIHandler::CBP_TRAY_ICON;
+	nid.hIcon = UIHandler::CBP_ICON;
+	nid.hWnd = hwnd;
+	nid.uFlags = NIF_ICON | NIF_MESSAGE;
+	nid.dwInfoFlags = NIIF_USER | NIIF_NOSOUND;
+	nid.uCallbackMessage = UIHandler::CBP_ICON_MESSAGE;
+
+	Shell_NotifyIcon(NIM_ADD, &nid);
+	Shell_NotifyIcon(NIM_SETVERSION, &nid);
 }
 
 LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch(message) {
 
-	case WM_CREATE:
-	{
-		setupUI(hwnd);
+		case UIHandler::CBP_ICON_MESSAGE:
+		{
 
-		standardPaste = SettingsHandler::getKey("standardPaste") == "0" ? false : true;
-
-		for(int i = 0; i < 10; i++) {
-			std::string cbContent = SettingsHandler::getClipboardContent(i);
-			clipboardData[i] = cbContent;
-			SetWindowTextA(uiHandler->getCBEditBox(i), cbContent.c_str());
-		}
-	} break;
-
-	case WM_COMMAND:
-	{
-		if(HIWORD(wParam) == BN_CLICKED) {
-			switch(LOWORD(wParam)) {
-
-				case UIHandler::BTN_CLEAR:
-					for(int i = 0; i < 10; i++) {
-						clipboardData[i] = "";
-						SetWindowText(uiHandler->getCBEditBox(i), "");
-
-						SettingsHandler::clearAllClipboards();
-					}
-					break;
-
-				case UIHandler::BTN_HIDE:
-					ShowWindow(hwnd, SW_HIDE);
-					UIHandler::messageBox("Press Ctrl+F6 to show!", "Abracadabra!");
-					break;
-
-				case UIHandler::BTN_HELP:
-				{
-					int helpResponse = UIHandler::messageBox(
-							"Press Ctrl+C+NUMBER_KEY to copy data to the respective clipboard.\n"
-							"Press Ctrl+V+NUMBER_KEY to paste data.\n"
-							"If you have standard paste enabled, press Ctrl+NUMBER_KEY+V, in that order, to paste."
-							"\n\nFor more detailed instructions, press the \"OK\" button below.",
-							"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
-
-					if(helpResponse == IDOK) {
-						ShellExecute(NULL, "open", "readme.txt", NULL, NULL, SW_SHOW);
-					}
-				} break;
-
-				case UIHandler::BTN_CLEAR0:
-				case UIHandler::BTN_CLEAR1:
-				case UIHandler::BTN_CLEAR2:
-				case UIHandler::BTN_CLEAR3:
-				case UIHandler::BTN_CLEAR4:
-				case UIHandler::BTN_CLEAR5:
-				case UIHandler::BTN_CLEAR6:
-				case UIHandler::BTN_CLEAR7:
-				case UIHandler::BTN_CLEAR8:
-				case UIHandler::BTN_CLEAR9:
-				{
-					int index = LOWORD(wParam) - 2000;
-					clipboardData[index] = "";
-					SetWindowText(uiHandler->getCBEditBox(index), "");
-
-					SettingsHandler::clearClipboard(index);
-				} break;
-
-				case UIHandler::BTN_STD_PASTE:
-					standardPaste = !standardPaste;
-					cbHandler->emptyClipboard();
+			switch(LOWORD(lParam)) {
+				case WM_LBUTTONUP:
+					ShowWindow(hwnd, SW_SHOW);
 					break;
 			}
-		}
 
-	} break;
+		} break;
+		case WM_CREATE:
+		{
+			setupUI(hwnd);
 
-	case WM_QUERYENDSESSION:
-		cleanUp();
-		stop("Computer shutting down.");
-		break;
+			for(int i = 0; i < 10; i++) {
+				std::string cbContent = SettingsHandler::getClipboardContent(i);
+				clipboardData[i] = cbContent;
+				SetWindowTextA(uiHandler->getCBEditBox(i), cbContent.c_str());
+			}
+		} break;
 
-	case WM_HOTKEY:
-		if(wParam == HOTKEY_SHOWWINDOW) {
-			ShowWindow(hwnd, SW_SHOW);
-		}
-		break;
+		case WM_COMMAND:
+		{
+			if(HIWORD(wParam) == BN_CLICKED) {
+				switch(LOWORD(wParam)) {
 
-	case WM_DESTROY:
-		cleanUp();
-		stop();
-		break;
-	default:
-		return DefWindowProc(hwnd, message, wParam, lParam);
+					case UIHandler::BTN_CLEAR:
+					{
+						for(int i = 0; i < 10; i++) {
+							clipboardData[i] = "";
+							SetWindowText(uiHandler->getCBEditBox(i), "");
+							SettingsHandler::clearAllClipboards();
+						}
+					} break;
+
+					case UIHandler::BTN_HELP:
+					{
+						int helpResponse = UIHandler::messageBox(
+								"Press Ctrl+C+NUMBER_KEY to copy data to the respective clipboard.\n"
+								"Press Ctrl+V+NUMBER_KEY to paste data.\n"
+								"If you have standard paste enabled, press Ctrl+NUMBER_KEY+V, in that order, to paste."
+								"\n\nFor more detailed instructions, press the \"OK\" button below.",
+								"Help", hwnd, MB_OKCANCEL | MB_ICONINFORMATION);
+
+						if(helpResponse == IDOK) {
+							ShellExecute(NULL, "open", "readme.txt", NULL, NULL, SW_SHOW);
+						}
+					} break;
+
+					case UIHandler::BTN_CLEAR0:
+					case UIHandler::BTN_CLEAR1:
+					case UIHandler::BTN_CLEAR2:
+					case UIHandler::BTN_CLEAR3:
+					case UIHandler::BTN_CLEAR4:
+					case UIHandler::BTN_CLEAR5:
+					case UIHandler::BTN_CLEAR6:
+					case UIHandler::BTN_CLEAR7:
+					case UIHandler::BTN_CLEAR8:
+					case UIHandler::BTN_CLEAR9:
+					{
+						int index = LOWORD(wParam) - 2000;
+						clipboardData[index] = "";
+						SetWindowText(uiHandler->getCBEditBox(index), "");
+
+						SettingsHandler::clearClipboard(index);
+					} break;
+
+					case UIHandler::BTN_STD_PASTE:
+						Settings::standardPaste = !Settings::standardPaste;
+						cbHandler->emptyClipboard();
+						break;
+
+					case UIHandler::BTN_BALLOON_TIPS:
+						Settings::showBalloonTips = !Settings::showBalloonTips;
+						break;
+				}
+			}
+
+		} break;
+
+		case WM_QUERYENDSESSION:
+			cleanUp();
+			stop("Computer shutting down.");
+			break;
+
+		case WM_SYSCOMMAND:
+			if(wParam == SC_MINIMIZE){
+				ShowWindow(hwnd, SW_HIDE);
+				uiHandler->showBaloonTip("Clipboard+ Hidden", "Click the Clipboard+ icon to show!");
+			}
+			else return DefWindowProc(hwnd, message, wParam, lParam);
+			break;
+
+		case WM_HOTKEY:
+			if(wParam == HOTKEY_SHOWWINDOW) {
+				ShowWindow(hwnd, SW_SHOW);
+			}
+			break;
+
+		case WM_DESTROY:
+			cleanUp();
+			stop();
+			break;
+		default:
+			return DefWindowProc(hwnd, message, wParam, lParam);
 	}
 
 	return 0;
@@ -227,10 +255,16 @@ LRESULT CALLBACK ClipboardPlus::kbHookProc(int nCode, WPARAM wParam, LPARAM lPar
 
 				clipboardData[index] = cbData;
 
+				if(Settings::showBalloonTips) {
+					char numStr[2] = {(char)numKey, '\0'};
+					std::string balloonTitle = std::string("Text copied to clipboard #").append(numStr);
+					std::string balloonInfo = clipboardData[index].length() > 30 ? clipboardData[index].substr(0, 30).append("...") : clipboardData[index];
+					uiHandler->showBaloonTip(balloonTitle, balloonInfo);
+				}
 				doneCopy = true;
 			}
 
-			if(standardPaste) {
+			if(Settings::standardPaste) {
 				if(ctrlDown && numKey != -1 && !cDown) {
 					int index = numKey - 0x30;
 					cbHandler->setClipboardText(clipboardData[index]);

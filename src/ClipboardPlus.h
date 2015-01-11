@@ -8,7 +8,7 @@
 #include "WindowSetup.h"
 #include "ClipboardHandler.h"
 #include "UIHandler.h"
-#include "SettingsHandler.h"
+#include "Settings.h"
 
 #define HOTKEY_SHOWWINDOW 8880
 #define HOTKEY_CTRLNUM 9990
@@ -17,7 +17,6 @@ class ClipboardPlus {
 
 private:
 	HINSTANCE hInstance;
-	bool running;
 	std::string title;
 	int width, height;
 	HWND mainWindow;
@@ -29,7 +28,7 @@ private:
 	UIHandler* uiHandler;
 	WNDPROC wProc;
 	HOOKPROC kbProc;
-	bool ctrlDown, cDown, vDown, standardPaste;
+	bool ctrlDown, cDown, vDown;
 	int numKey;
 
 	void stop(const char message[128] = "NONE");
