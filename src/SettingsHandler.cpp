@@ -1,7 +1,15 @@
 #include "SettingsHandler.h"
 
-SettingsHandler::SettingsHandler() {
+const std::string SettingsHandler::SETTINGS_FILE = getAppDataDir() + "\\Clipboard+\\settings.txt";
+const std::string SettingsHandler::ROOT_DIR = getAppDataDir() + "\\Clipboard+";
 
+std::string SettingsHandler::getAppDataDir() {
+	char buffer[MAX_PATH];
+
+	if(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, buffer) != S_OK) {
+		std::cout << "Could not find appdata path!" << std::endl;
+	}
+	return std::string(buffer);
 }
 
 void SettingsHandler::readFile(std::string fileName, std::string& outputString) {
@@ -13,7 +21,7 @@ void SettingsHandler::readFile(std::string fileName, std::string& outputString) 
 			outputString.append(temp).append("\n");
 		}
 	} else {
-		outputString = "ERROR OPENING FILE";
+		std::cout << "Error opening file" << std::endl;
 	}
 	inputFile.close();
 }
@@ -36,7 +44,7 @@ std::vector<std::string> SettingsHandler::readLines(const std::string& path) {
 }
 
 std::string SettingsHandler::getKey(std::string key) {
-	std::ifstream inputFile(SETTINGS_FILE);
+	std::ifstream inputFile(SETTINGS_FILE.c_str());
 	std::string temp = "", finalString = "";
 
 	if(inputFile.is_open()) {
@@ -64,7 +72,7 @@ std::string SettingsHandler::getClipboardContent(int clipboardId) {
 
 	if(clipboardId >= 0 && clipboardId <= 9) {
 		char cbIdStr[2] = {(char)(clipboardId + 0x30), '\0'};
-		std::string clipboardFile = std::string(SETTINGS_DIR).append("\\cb").append(cbIdStr).append(".txt");
+		std::string clipboardFile = std::string(ROOT_DIR).append("\\cb").append(cbIdStr).append(".txt");
 		readFile(clipboardFile, finalString);
 	}
 
@@ -75,7 +83,7 @@ void SettingsHandler::clearClipboard(int clipboardId) {
 	if(clipboardId < 0 || clipboardId > 9) return;
 
 	char cbIdStr[2] = {(char)(clipboardId + 0x30), '\0'};
-	std::string cbFileName = std::string(SETTINGS_DIR).append("\\cb").append(cbIdStr).append(".txt");
+	std::string cbFileName = std::string(ROOT_DIR).append("\\cb").append(cbIdStr).append(".txt");
 	std::ofstream cbFile(cbFileName.c_str(), std::ios::trunc);
 	cbFile.close();
 }
@@ -88,7 +96,7 @@ void SettingsHandler::clearAllClipboards() {
 
 void SettingsHandler::setKey(std::string key, std::string value) {
 	std::vector<std::string> lines = readLines(SETTINGS_FILE);
-	std::ofstream settingsFile(SETTINGS_FILE, std::ios::app);
+	std::ofstream settingsFile(SETTINGS_FILE.c_str(), std::ios::app);
 
 	if(settingsFile.is_open()) {
 		for(unsigned int i = 0; i < lines.size(); i++) {
@@ -107,7 +115,7 @@ void SettingsHandler::setClipboard(int clipboardId, std::string value) {
 	if(clipboardId < 0 || clipboardId > 9) return;
 
 	char cbIdStr[2] = {(char)(clipboardId + 0x30), '\0'};
-	std::string cbFileName = std::string(SETTINGS_DIR).append("\\cb").append(cbIdStr).append(".txt");
+	std::string cbFileName = std::string(ROOT_DIR).append("\\cb").append(cbIdStr).append(".txt");
 	std::ofstream cbFile(cbFileName.c_str(), std::ios::trunc);
 
 	if(cbFile.is_open()) {
