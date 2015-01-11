@@ -8,6 +8,7 @@
 #include "WindowSetup.h"
 #include "ClipboardHandler.h"
 #include "UIHandler.h"
+#include "SettingsHandler.h"
 
 #define HOTKEY_SHOWWINDOW 8880
 #define HOTKEY_CTRLNUM 9990
@@ -35,6 +36,7 @@ private:
 	void cleanUp();
 	void setupUI(HWND hwnd);
 	float timeMs() { return ((float)clock() / CLOCKS_PER_SEC) * 1000; }
+	void savePersistentData();
 
 public:
 	static const std::string VERSION;

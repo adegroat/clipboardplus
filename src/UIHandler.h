@@ -4,6 +4,8 @@
 #include <windows.h>
 #include <string>
 
+#include "SettingsHandler.h"
+
 #define DEFAULT_BTN_WIDTH 80
 #define DEFAULT_BTN_HEIGHT 25
 

@@ -26,10 +26,6 @@ void ClipboardPlus::start() {
 	if(running) return;
 	running = true;
 
-	for(int i = 0; i < 10; i++) {
-		clipboardData[i] = "";
-	}
-
 	WindowSetup ws(hInstance, title.c_str(), wProc);
 	if(!ws.registerClass()){
 		UIHandler::messageBox("Error registering window!");
@@ -86,6 +82,8 @@ void ClipboardPlus::stop(const char message[128]) {
 }
 
 void ClipboardPlus::cleanUp() {
+	savePersistentData();
+
 	delete cbHandler;
 	delete uiHandler;
 
@@ -93,6 +91,13 @@ void ClipboardPlus::cleanUp() {
 	UnregisterHotKey(mainWindow, HOTKEY_SHOWWINDOW);
 	for(int i = 0; i < 10; i++) {
 		UnregisterHotKey(mainWindow, HOTKEY_CTRLNUM + i);
+	}
+}
+
+void ClipboardPlus::savePersistentData() {
+	SettingsHandler::setKey("standardPaste", standardPaste ? "1" : "0");
+	for(int i = 0; i < 10; i++) {
+		SettingsHandler::setClipboard(i, clipboardData[i]);
 	}
 }
 
@@ -105,8 +110,17 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	switch(message) {
 
 	case WM_CREATE:
+	{
 		setupUI(hwnd);
-		break;
+
+		standardPaste = SettingsHandler::getKey("standardPaste") == "0" ? false : true;
+
+		for(int i = 0; i < 10; i++) {
+			std::string cbContent = SettingsHandler::getClipboardContent(i);
+			clipboardData[i] = cbContent;
+			SetWindowTextA(uiHandler->getCBEditBox(i), cbContent.c_str());
+		}
+	} break;
 
 	case WM_COMMAND:
 	{
@@ -117,6 +131,8 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					for(int i = 0; i < 10; i++) {
 						clipboardData[i] = "";
 						SetWindowText(uiHandler->getCBEditBox(i), "");
+
+						SettingsHandler::clearAllClipboards();
 					}
 					break;
 
@@ -153,6 +169,8 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 					int index = LOWORD(wParam) - 2000;
 					clipboardData[index] = "";
 					SetWindowText(uiHandler->getCBEditBox(index), "");
+
+					SettingsHandler::clearClipboard(index);
 				} break;
 
 				case UIHandler::BTN_STD_PASTE:
@@ -165,7 +183,8 @@ LRESULT CALLBACK ClipboardPlus::windProc(HWND hwnd, UINT message, WPARAM wParam,
 	} break;
 
 	case WM_QUERYENDSESSION:
-
+		cleanUp();
+		stop("Computer shutting down.");
 		break;
 
 	case WM_HOTKEY:
