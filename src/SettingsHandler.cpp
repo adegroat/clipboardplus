@@ -18,7 +18,7 @@ void SettingsHandler::readFile(std::string fileName, std::string& outputString) 
 
 	if(inputFile.is_open()) {
 		while(std::getline(inputFile, temp)) {
-			outputString.append(temp).append("\n");
+			outputString.append(temp);
 		}
 	} else {
 		std::cout << "Error opening file" << std::endl;
